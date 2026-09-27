@@ -58,7 +58,7 @@ export class DcaEngineService {
   getTramoInfo(drawdownPercentage: number): TramoInfo {
     if (drawdownPercentage <= 2.0) {
       return {
-        name: 'Zona Máximos / Momentum',
+        name: 'Zona Momentum (hasta 2%)',
         badge: 'Momentum',
         icon: '🚀',
         description: 'Máximo impulso alcista (ATH y consolidación en techo)',
@@ -66,41 +66,65 @@ export class DcaEngineService {
     }
     if (drawdownPercentage <= 5.0) {
       return {
-        name: 'Ruido / Consolidación leve',
-        badge: 'Ruido / Neutro',
+        name: 'Consolidación (entre 2% y 5%)',
+        badge: 'Consolidación',
         icon: '⚖️',
         description: 'Transición neutra (ni momentum ni descuento)',
       };
     }
     if (drawdownPercentage <= 10.0) {
       return {
-        name: 'Corrección inicial',
-        badge: 'Descuento inicial',
+        name: 'Entre 5% y 10%',
+        badge: 'Caída 5-10%',
         icon: '🛒',
         description: 'Comienzan las compras con descuento (-5% a -10%)',
       };
     }
     if (drawdownPercentage <= 15.0) {
       return {
-        name: 'Corrección técnica',
-        badge: 'Rebaja moderada',
+        name: 'Entre 10% y 15%',
+        badge: 'Caída 10-15%',
         icon: '🛒',
         description: 'Rebaja moderada (-10% a -15%)',
       };
     }
     if (drawdownPercentage <= 20.0) {
       return {
-        name: 'Corrección media',
-        badge: 'Rebaja notable',
+        name: 'Entre 15% y 20%',
+        badge: 'Caída 15-20%',
         icon: '🛒',
         description: 'Rebaja notable (-15% a -20%)',
       };
     }
+    if (drawdownPercentage <= 25.0) {
+      return {
+        name: 'Entre 20% y 25%',
+        badge: 'Caída 20-25%',
+        icon: '💎',
+        description: 'Oportunidad fuerte / Acumulación (-20% a -25%)',
+      };
+    }
+    if (drawdownPercentage <= 30.0) {
+      return {
+        name: 'Entre 25% y 30%',
+        badge: 'Caída 25-30%',
+        icon: '💎',
+        description: 'Corrección severa / Acumulación (-25% a -30%)',
+      };
+    }
+    if (drawdownPercentage <= 35.0) {
+      return {
+        name: 'Entre 30% y 35%',
+        badge: 'Caída 30-35%',
+        icon: '💎',
+        description: 'Desplome profundo (-30% a -35%)',
+      };
+    }
     return {
-      name: 'Mercado bajista / Oportunidad',
-      badge: 'Acumulación masiva',
+      name: 'Más de un 35%',
+      badge: 'Caída >35%',
       icon: '💎',
-      description: 'Acumulación masiva en desplomes (>20% de caída)',
+      description: 'Desplome extremo / Acumulación máxima (>35%)',
     };
   }
 

@@ -66,15 +66,17 @@ describe('DcaEngineService', () => {
       expect(info.icon).toBe('🚀');
     });
 
-    it('should return Ruido/Neutro tramo for drawdown between 2% and 5%', () => {
+    it('should return Consolidación tramo for drawdown between 2% and 5%', () => {
       const info = service.getTramoInfo(3.5);
-      expect(info.badge).toBe('Ruido / Neutro');
+      expect(info.name).toBe('Consolidación (entre 2% y 5%)');
+      expect(info.badge).toBe('Consolidación');
       expect(info.icon).toBe('⚖️');
     });
 
-    it('should return Acumulación masiva for drawdown > 20%', () => {
+    it('should return specific tramo for drawdown between 20% and 25%', () => {
       const info = service.getTramoInfo(22.0);
-      expect(info.badge).toBe('Acumulación masiva');
+      expect(info.name).toBe('Entre 20% y 25%');
+      expect(info.badge).toBe('Caída 20-25%');
       expect(info.icon).toBe('💎');
     });
   });
