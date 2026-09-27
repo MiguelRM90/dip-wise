@@ -1,0 +1,181 @@
+import { Component, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DcaEngineService } from '../../../../core/services/dca-engine.service';
+import { AssetAllocation } from '../../../../core/models/portfolio.model';
+
+interface ChartSlice {
+  allocation: AssetAllocation;
+  color: string;
+  strokeDasharray: string;
+  strokeDashoffset: number;
+  percentage: number;
+}
+
+const COLOR_PALETTE = [
+  '#0284c7', // sky-600
+  '#10b981', // emerald-500
+  '#6366f1', // indigo-500
+  '#f59e0b', // amber-500
+  '#ec4899', // pink-500
+  '#8b5cf6', // purple-500
+  '#14b8a6', // teal-500
+  '#f97316', // orange-500
+  '#06b6d4', // cyan-500
+  '#84cc16', // lime-500
+];
+
+@Component({
+  selector: 'app-allocation-chart',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    @let s = dcaEngine.summary();
+
+    <div class="rounded-2xl p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-full">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span>Distribución de Aportación Periódica</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Reparto táctico final del período actual
+          </p>
+        </div>
+        <span class="text-xs font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          {{ s.allocations.length }} activos
+        </span>
+      </div>
+
+      @if (s.allocations.length === 0) {
+        <div class="flex-1 flex flex-col items-center justify-center py-10 text-slate-400 text-sm">
+          <span>No hay activos registrados</span>
+        </div>
+      } @else {
+        <div class="flex-1 flex flex-col md:flex-row items-center justify-center gap-6 pt-4">
+          <!-- Donut SVG Container -->
+          <div class="relative w-48 h-48 shrink-0 flex items-center justify-center">
+            <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+              <!-- Background Circle -->
+              <circle
+                cx="50"
+                cy="50"
+                r="38"
+                fill="none"
+                stroke-width="14"
+                class="stroke-slate-100 dark:stroke-slate-800"
+              />
+
+              <!-- Slice Arcs -->
+              @for (slice of slices(); track slice.allocation.asset.id; let idx = $index) {
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="38"
+                  fill="none"
+                  stroke-width="14"
+                  [attr.stroke]="slice.color"
+                  [attr.stroke-dasharray]="slice.strokeDasharray"
+                  [attr.stroke-dashoffset]="slice.strokeDashoffset"
+                  (mouseenter)="hoveredAssetId.set(slice.allocation.asset.id)"
+                  (mouseleave)="hoveredAssetId.set(null)"
+                  class="transition-all duration-300 cursor-pointer hover:opacity-90"
+                  [class.stroke-width-16]="hoveredAssetId() === slice.allocation.asset.id"
+                />
+              }
+            </svg>
+
+            <!-- Center Summary Text -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
+              <span class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Total</span>
+              <span class="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
+                {{ s.allocatedBudget | currency: 'EUR' : 'symbol' : '1.0-0' }}
+              </span>
+              <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">100%</span>
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="flex-1 w-full space-y-2 max-h-56 overflow-y-auto pr-1">
+            @for (slice of slices(); track slice.allocation.asset.id) {
+              <div
+                (mouseenter)="hoveredAssetId.set(slice.allocation.asset.id)"
+                (mouseleave)="hoveredAssetId.set(null)"
+                class="flex items-center justify-between p-2 rounded-xl transition-colors cursor-pointer text-xs"
+                [ngClass]="
+                  hoveredAssetId() === slice.allocation.asset.id
+                    ? 'bg-slate-100 dark:bg-slate-800/80 shadow-sm'
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                "
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span
+                    class="w-3 h-3 rounded-full shrink-0 shadow-sm"
+                    [style.background-color]="slice.color"
+                  ></span>
+                  <div class="truncate">
+                    <div class="font-bold text-slate-800 dark:text-slate-200 truncate">
+                      {{ slice.allocation.asset.ticker }}
+                    </div>
+                    <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                      {{ slice.allocation.asset.name }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-right shrink-0 pl-2">
+                  <div class="font-bold text-slate-900 dark:text-white">
+                    {{ slice.allocation.finalAllocation | currency: 'EUR' : 'symbol' : '1.2-2' }}
+                  </div>
+                  <div class="text-[10px] font-semibold text-sky-600 dark:text-sky-400">
+                    {{ slice.percentage }}%
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  `,
+  styles: [
+    `
+      .stroke-width-16 {
+        stroke-width: 17;
+      }
+    `,
+  ],
+})
+export class AllocationChartComponent {
+  readonly dcaEngine = inject(DcaEngineService);
+  readonly hoveredAssetId = signal<string | null>(null);
+
+  readonly slices = computed<ChartSlice[]>(() => {
+    const summary = this.dcaEngine.summary();
+    const allocations = summary.allocations;
+    const total = summary.allocatedBudget;
+
+    if (total <= 0 || allocations.length === 0) {
+      return [];
+    }
+
+    const circumference = 2 * Math.PI * 38; // r = 38 => ~238.76
+    let accumulatedLength = 0;
+
+    return allocations.map((allocation, index) => {
+      const percentage = (allocation.finalAllocation / total) * 100;
+      const sliceLength = (allocation.finalAllocation / total) * circumference;
+      const strokeDasharray = `${sliceLength} ${circumference - sliceLength}`;
+      const strokeDashoffset = -accumulatedLength;
+
+      accumulatedLength += sliceLength;
+
+      return {
+        allocation,
+        color: COLOR_PALETTE[index % COLOR_PALETTE.length],
+        strokeDasharray,
+        strokeDashoffset,
+        percentage: Math.round(percentage * 10) / 10,
+      };
+    });
+  });
+}
