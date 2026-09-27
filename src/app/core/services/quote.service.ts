@@ -3,7 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, timeout } from 'rxjs';
 import { StorageService } from './storage.service';
 import { Asset } from '../models/asset.model';
-import { QuoteFetchResult, YahooChartResponse } from '../models/quote.model';
+import {
+  QuoteFetchResult,
+  YahooChartResponse,
+  YahooSearchQuote,
+  YahooSearchResponse,
+  ResolvedSymbolResult,
+} from '../models/quote.model';
 
 @Injectable({
   providedIn: 'root',
@@ -110,12 +116,75 @@ export class QuoteService {
   }
 
   /**
+   * Searches Yahoo Finance for symbols matching an ISIN or search query
+   */
+  async searchYahooSymbols(query: string): Promise<YahooSearchQuote[]> {
+    const cleanQuery = query.trim();
+    if (!cleanQuery) return [];
+
+    const settings = this.storage.settings();
+    const proxyBase = settings.apiSettings.corsProxyUrl || 'https://api.allorigins.win/raw?url=';
+    const targetUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(cleanQuery)}&quotesCount=6&newsCount=0`;
+    const requestUrl = `${proxyBase}${encodeURIComponent(targetUrl)}`;
+
+    try {
+      const response = await firstValueFrom(
+        this.http.get<YahooSearchResponse>(requestUrl).pipe(timeout(10000))
+      );
+      return response.quotes || [];
+    } catch (err: unknown) {
+      console.warn('Yahoo Finance search failed:', err);
+      return [];
+    }
+  }
+
+  /**
+   * Resolves an ISIN into the most appropriate market ticker symbol
+   */
+  async resolveTickerFromIsin(isin: string): Promise<ResolvedSymbolResult | null> {
+    const quotes = await this.searchYahooSymbols(isin);
+    if (!quotes || quotes.length === 0) return null;
+
+    // Prioritize European EUR exchanges (.AS, .DE, .PA, .MI, .MC) for UCITS ETFs
+    const eurExchangeMatch = quotes.find((q) =>
+      /\.(AS|DE|PA|MI|MC|F)$/i.test(q.symbol)
+    );
+
+    // Secondary: Any ETF or mutual fund
+    const etfMatch = quotes.find(
+      (q) => q.quoteType === 'ETF' || q.quoteType === 'MUTUALFUND'
+    );
+
+    const bestMatch = eurExchangeMatch || etfMatch || quotes[0];
+
+    return {
+      symbol: bestMatch.symbol,
+      name: bestMatch.longname || bestMatch.shortname,
+      exchange: bestMatch.exchDisp || bestMatch.exchange,
+      quotes,
+    };
+  }
+
+  /**
    * Dispatches fetch depending on the configured API provider
    */
   private async fetchQuoteForAsset(asset: Asset): Promise<QuoteFetchResult> {
     const settings = this.storage.settings();
     const { provider, apiKey, corsProxyUrl, customProxyUrlTemplate } = settings.apiSettings;
-    const ticker = asset.ticker.trim();
+    let ticker = asset.ticker.trim();
+
+    // Auto-resolve ticker from ISIN if ticker is missing
+    if (!ticker && asset.isin.trim()) {
+      const resolved = await this.resolveTickerFromIsin(asset.isin.trim());
+      if (resolved?.symbol) {
+        ticker = resolved.symbol;
+        asset.ticker = ticker;
+        if (!asset.name && resolved.name) {
+          asset.name = resolved.name;
+        }
+        this.storage.saveAsset(asset);
+      }
+    }
 
     if (!ticker) {
       return {

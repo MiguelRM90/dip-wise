@@ -2,6 +2,7 @@ import { Component, inject, input, output, signal, effect } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Asset, AssetCategory } from '../../../../core/models/asset.model';
+import { YahooSearchQuote } from '../../../../core/models/quote.model';
 import { StorageService } from '../../../../core/services/storage.service';
 import { QuoteService } from '../../../../core/services/quote.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -50,14 +51,33 @@ import { ToastService } from '../../../../core/services/toast.service';
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Código ISIN <span class="text-rose-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="LU1681048804"
-                  [(ngModel)]="formIsin"
-                  name="formIsin"
-                  class="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none uppercase"
-                />
+                <div class="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="IE00B4L5Y983"
+                    [(ngModel)]="formIsin"
+                    name="formIsin"
+                    (keyup.enter)="autoFetchQuote()"
+                    class="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none uppercase"
+                  />
+                  <button
+                    type="button"
+                    (click)="autoFetchQuote()"
+                    [disabled]="isFetchingQuote()"
+                    class="shrink-0 px-2.5 py-1 text-xs font-semibold rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-colors disabled:opacity-50 flex items-center gap-1 shadow-sm"
+                    title="Buscar Ticker, Nombre y Precios automáticamente por ISIN"
+                  >
+                    @if (isFetchingQuote()) {
+                      <svg class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                      </svg>
+                    } @else {
+                      <span>🔍 Auto</span>
+                    }
+                  </button>
+                </div>
               </div>
 
               <!-- Ticker -->
@@ -72,6 +92,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                     placeholder="IWDA.AS o SP500"
                     [(ngModel)]="formTicker"
                     name="formTicker"
+                    (keyup.enter)="autoFetchQuote()"
                     class="w-full px-3 py-2 text-xs font-semibold uppercase rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
                   />
                   <button
@@ -79,7 +100,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                     (click)="autoFetchQuote()"
                     [disabled]="isFetchingQuote()"
                     class="shrink-0 px-2.5 py-1 text-xs font-medium rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors disabled:opacity-50"
-                    title="Consultar precio y ATH en mercado"
+                    title="Consultar precio y ATH en mercado por Ticker"
                   >
                     @if (isFetchingQuote()) {
                       <svg class="w-4 h-4 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24">
@@ -93,6 +114,33 @@ import { ToastService } from '../../../../core/services/toast.service';
                 </div>
               </div>
             </div>
+
+            <!-- Alternative markets pill selector if ISIN search returned multiple listings -->
+            @if (alternativeQuotes().length > 1) {
+              <div class="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 text-xs">
+                <div class="flex items-center justify-between gap-1 mb-1.5">
+                  <span class="font-semibold text-sky-900 dark:text-sky-300">Bolsas / divisas disponibles:</span>
+                  <span class="text-slate-500 dark:text-slate-400 text-[10px]">Haz clic para cambiar</span>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (q of alternativeQuotes(); track q.symbol) {
+                    <button
+                      type="button"
+                      (click)="selectAlternativeQuote(q)"
+                      class="px-2 py-0.5 rounded-lg text-xs font-mono font-medium transition-colors"
+                      [ngClass]="
+                        formTicker === q.symbol
+                          ? 'bg-sky-600 text-white font-bold shadow-sm'
+                          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:border-sky-500'
+                      "
+                    >
+                      {{ q.symbol }}
+                      <span class="text-[10px] opacity-75">({{ q.exchDisp || q.exchange || 'Mkt' }})</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
 
             <!-- Asset Name -->
             <div>
@@ -261,6 +309,7 @@ export class AssetModalComponent {
   readonly close = output<void>();
 
   readonly isFetchingQuote = signal<boolean>(false);
+  readonly alternativeQuotes = signal<YahooSearchQuote[]>([]);
 
   formIsin = '';
   formTicker = '';
@@ -274,6 +323,7 @@ export class AssetModalComponent {
   constructor() {
     effect(() => {
       const asset = this.editingAsset();
+      this.alternativeQuotes.set([]);
       if (asset) {
         this.formIsin = asset.isin;
         this.formTicker = asset.ticker;
@@ -297,16 +347,72 @@ export class AssetModalComponent {
   }
 
   async autoFetchQuote(): Promise<void> {
-    if (!this.formTicker.trim()) {
-      this.toast.warning('Ticker requerido', 'Introduce un ticker para consultar la API (ej. IWDA.AS).');
+    const isin = this.formIsin.trim().toUpperCase();
+    let ticker = this.formTicker.trim().toUpperCase();
+
+    if (!isin && !ticker) {
+      this.toast.warning('Datos requeridos', 'Introduce el código ISIN o el Ticker para buscar.');
       return;
     }
 
     this.isFetchingQuote.set(true);
+
+    try {
+      // 1. If ticker is empty, or user entered an ISIN in the ticker field, resolve via ISIN search
+      const isTickerActuallyIsin = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i.test(ticker);
+      const searchTarget = !ticker || isTickerActuallyIsin ? (isin || ticker) : null;
+
+      if (searchTarget) {
+        if (!this.formIsin && isTickerActuallyIsin) {
+          this.formIsin = ticker;
+        }
+
+        const resolved = await this.quoteService.resolveTickerFromIsin(searchTarget);
+        if (!resolved?.symbol) {
+          this.toast.error(
+            'Ticker no encontrado',
+            `No se encontró ningún símbolo para ${searchTarget}. Introduce el Ticker manualmente.`
+          );
+          return;
+        }
+
+        ticker = resolved.symbol.toUpperCase();
+        this.formTicker = ticker;
+        this.alternativeQuotes.set(resolved.quotes || []);
+
+        if (resolved.name && !this.formName.trim()) {
+          this.formName = resolved.name;
+        }
+      }
+
+      // 2. Fetch prices (current and 52w ATH)
+      await this.fetchQuoteOnly(ticker);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al consultar mercado';
+      this.toast.error('Error de consulta', msg);
+    } finally {
+      this.isFetchingQuote.set(false);
+    }
+  }
+
+  async selectAlternativeQuote(quote: YahooSearchQuote): Promise<void> {
+    this.formTicker = quote.symbol.toUpperCase();
+    if ((quote.longname || quote.shortname) && !this.formName.trim()) {
+      this.formName = quote.longname || quote.shortname || '';
+    }
+    this.isFetchingQuote.set(true);
+    try {
+      await this.fetchQuoteOnly(quote.symbol);
+    } finally {
+      this.isFetchingQuote.set(false);
+    }
+  }
+
+  private async fetchQuoteOnly(ticker: string): Promise<void> {
     const tempAsset: Asset = {
       id: 'temp',
       isin: this.formIsin,
-      ticker: this.formTicker,
+      ticker: ticker,
       name: this.formName,
       category: this.formCategory,
       baseWeightPercentage: this.formBaseWeight,
@@ -316,15 +422,17 @@ export class AssetModalComponent {
     };
 
     const res = await this.quoteService.updateSingleAssetQuote(tempAsset);
-    this.isFetchingQuote.set(false);
 
     if (res.success && res.price) {
       this.formCurrentPrice = res.price;
       this.formAthPrice = res.ath || res.price;
-      if (res.name && !this.formName) {
+      if (res.name && !this.formName.trim()) {
         this.formName = res.name;
       }
-      this.toast.success('Datos de mercado obtenidos', `${res.ticker}: ${res.price} €`);
+      this.toast.success(
+        'Datos de mercado obtenidos',
+        `${res.ticker}: ${res.price} € (Máx: ${this.formAthPrice} €)`
+      );
     } else {
       this.toast.error('Consulta no exitosa', res.error || 'Verifica el ticker o la conexión.');
     }

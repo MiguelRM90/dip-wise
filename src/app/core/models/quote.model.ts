@@ -33,3 +33,25 @@ export interface YahooChartResponse {
     } | null;
   };
 }
+
+export interface YahooSearchQuote {
+  symbol: string;
+  shortname?: string;
+  longname?: string;
+  exchange?: string;
+  exchDisp?: string;
+  typeDisp?: string;
+  quoteType?: string;
+}
+
+export interface YahooSearchResponse {
+  quotes?: YahooSearchQuote[];
+  count?: number;
+}
+
+export interface ResolvedSymbolResult {
+  symbol: string;
+  name?: string;
+  exchange?: string;
+  quotes: YahooSearchQuote[];
+}
