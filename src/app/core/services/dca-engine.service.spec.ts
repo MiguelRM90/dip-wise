@@ -18,50 +18,64 @@ describe('DcaEngineService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('calculatePoints (ATH Discount Bracket Rules)', () => {
-    it('should assign 0 points at or above ATH (drawdown <= 0%)', () => {
-      expect(service.calculatePoints(0)).toBe(0);
-      expect(service.calculatePoints(-2.5)).toBe(0);
+  describe('calculatePoints (Momentum & Drawdown Rules)', () => {
+    it('should assign 16 points for Zona Máximos / Momentum (drawdown <= 2.0%)', () => {
+      expect(service.calculatePoints(-1.0)).toBe(16);
+      expect(service.calculatePoints(0)).toBe(16);
+      expect(service.calculatePoints(1.2)).toBe(16);
+      expect(service.calculatePoints(2.0)).toBe(16);
     });
 
-    it('should assign 1 point for drawdown between 0% and 5%', () => {
-      expect(service.calculatePoints(0.5)).toBe(1);
-      expect(service.calculatePoints(5.0)).toBe(1);
+    it('should assign 4 points for Ruido / Consolidación leve (2.0% < drawdown <= 5.0%)', () => {
+      expect(service.calculatePoints(2.1)).toBe(4);
+      expect(service.calculatePoints(4.0)).toBe(4);
+      expect(service.calculatePoints(5.0)).toBe(4);
     });
 
-    it('should assign 15 points for drawdown between 5% and 10%', () => {
+    it('should assign 15 points for Corrección inicial (5.0% < drawdown <= 10.0%)', () => {
       expect(service.calculatePoints(5.1)).toBe(15);
       expect(service.calculatePoints(10.0)).toBe(15);
     });
 
-    it('should assign 17 points for drawdown between 10% and 15%', () => {
+    it('should assign 17 points for Corrección técnica (10.0% < drawdown <= 15.0%)', () => {
       expect(service.calculatePoints(10.1)).toBe(17);
       expect(service.calculatePoints(15.0)).toBe(17);
     });
 
-    it('should assign 20 points for drawdown between 15% and 20%', () => {
+    it('should assign 20 points for Corrección media (15.0% < drawdown <= 20.0%)', () => {
       expect(service.calculatePoints(15.1)).toBe(20);
       expect(service.calculatePoints(20.0)).toBe(20);
     });
 
-    it('should assign 25 points for drawdown between 20% and 25%', () => {
+    it('should assign 25-75 points for Mercado bajista / Oportunidad (drawdown > 20.0%)', () => {
       expect(service.calculatePoints(20.1)).toBe(25);
       expect(service.calculatePoints(25.0)).toBe(25);
-    });
-
-    it('should assign 35 points for drawdown between 25% and 30%', () => {
       expect(service.calculatePoints(25.1)).toBe(35);
       expect(service.calculatePoints(30.0)).toBe(35);
-    });
-
-    it('should assign 50 points for drawdown between 30% and 35%', () => {
       expect(service.calculatePoints(30.1)).toBe(50);
       expect(service.calculatePoints(35.0)).toBe(50);
+      expect(service.calculatePoints(35.1)).toBe(75);
+      expect(service.calculatePoints(50.0)).toBe(75);
+    });
+  });
+
+  describe('getTramoInfo', () => {
+    it('should return Momentum tramo for drawdown <= 2.0%', () => {
+      const info = service.getTramoInfo(1.0);
+      expect(info.badge).toBe('Momentum');
+      expect(info.icon).toBe('🚀');
     });
 
-    it('should assign 75 points for drawdown greater than 35%', () => {
-      expect(service.calculatePoints(35.1)).toBe(75);
-      expect(service.calculatePoints(50)).toBe(75);
+    it('should return Ruido/Neutro tramo for drawdown between 2% and 5%', () => {
+      const info = service.getTramoInfo(3.5);
+      expect(info.badge).toBe('Ruido / Neutro');
+      expect(info.icon).toBe('⚖️');
+    });
+
+    it('should return Acumulación masiva for drawdown > 20%', () => {
+      const info = service.getTramoInfo(22.0);
+      expect(info.badge).toBe('Acumulación masiva');
+      expect(info.icon).toBe('💎');
     });
   });
 
@@ -98,18 +112,18 @@ describe('DcaEngineService', () => {
         id: '1',
         isin: 'LU1',
         ticker: 'EQ1',
-        name: 'Equity 1',
+        name: 'Equity 1 (At ATH)',
         category: 'equity',
         baseWeightPercentage: 50,
         dynamicMultiplier: 10,
-        currentPrice: 90,
+        currentPrice: 100,
         athPrice: 100,
       },
       {
         id: '2',
         isin: 'LU2',
         ticker: 'EQ2',
-        name: 'Equity 2',
+        name: 'Equity 2 (15% drop)',
         category: 'equity',
         baseWeightPercentage: 30,
         dynamicMultiplier: 6,
@@ -120,11 +134,11 @@ describe('DcaEngineService', () => {
         id: '3',
         isin: 'LU3',
         ticker: 'EQ3',
-        name: 'Equity 3',
+        name: 'Equity 3 (3% drop)',
         category: 'equity',
         baseWeightPercentage: 20,
         dynamicMultiplier: 4,
-        currentPrice: 95,
+        currentPrice: 97,
         athPrice: 100,
       },
       {
@@ -150,6 +164,12 @@ describe('DcaEngineService', () => {
 
       const sum = summary.allocations.reduce((acc, a) => acc + a.finalAllocation, 0);
       expect(sum).toBe(600);
+
+      // Verify that EQ1 receives momentum points (16 pts) and extra allocation even at ATH!
+      const eq1Alloc = summary.allocations.find((a) => a.asset.ticker === 'EQ1');
+      expect(eq1Alloc).toBeDefined();
+      expect(eq1Alloc?.points).toBe(16);
+      expect(eq1Alloc?.extraAllocation).toBeGreaterThan(0);
     });
 
     it('should work with arbitrary non-round budgets without losing cents or units', () => {

@@ -75,18 +75,18 @@ The engine computes allocations via a reactive signal `summary = computed<Portfo
 ### Step 1: Drawdown from ATH
 $$\text{Drawdown \%} = \frac{\text{ATH} - \text{Current Price}}{\text{ATH}} \times 100$$
 
-### Step 2: Bracket Points Scale
-| Drawdown Bracket | Points |
-| :--- | :---: |
-| $\text{Drawdown} \le 0\%$ | **0** |
-| $0\% < \text{Drawdown} \le 5\%$ | **1** |
-| $5\% < \text{Drawdown} \le 10\%$ | **15** |
-| $10\% < \text{Drawdown} \le 15\%$ | **17** |
-| $15\% < \text{Drawdown} \le 20\%$ | **20** |
-| $20\% < \text{Drawdown} \le 25\%$ | **25** |
-| $25\% < \text{Drawdown} \le 30\%$ | **35** |
-| $30\% < \text{Drawdown} \le 35\%$ | **50** |
-| $\text{Drawdown} > 35\%$ | **75** |
+### Step 2: Momentum & Bracket Points Scale
+| Drawdown Bracket | Points | Financial Behavior |
+| :--- | :---: | :--- |
+| $\text{Drawdown} \le 2.0\%$ | **16** | 🚀 Peak bullish momentum (ATH breakout & roof consolidation) |
+| $2.0\% < \text{Drawdown} \le 5.0\%$ | **4** | ⚖️ Neutral transition zone (market noise) |
+| $5.0\% < \text{Drawdown} \le 10.0\%$ | **15** | 🛒 Initial discount buying (-5% to -10%) |
+| $10.0\% < \text{Drawdown} \le 15.0\%$ | **17** | 🛒 Technical correction (-10% to -15%) |
+| $15.0\% < \text{Drawdown} \le 20.0\%$ | **20** | 🛒 Moderate correction (-15% to -20%) |
+| $20.0\% < \text{Drawdown} \le 25.0\%$ | **25** | 💎 Bear market / Strong buying opportunity |
+| $25.0\% < \text{Drawdown} \le 30.0\%$ | **35** | 💎 Severe discount accumulation |
+| $30.0\% < \text{Drawdown} \le 35.0\%$ | **50** | 💎 Deep crash accumulation |
+| $\text{Drawdown} > 35.0\%$ | **75** | 💎 Generational discount accumulation |
 
 ### Step 3: Pool Partitioning
 - **Equity Budget** = $\text{Total Budget} \times \frac{\text{Equity \%}}{100}$

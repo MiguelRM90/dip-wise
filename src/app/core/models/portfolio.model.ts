@@ -21,10 +21,18 @@ export interface PortfolioSettings {
   apiSettings: ApiSettings;
 }
 
+export interface TramoInfo {
+  name: string;
+  badge: string;
+  icon: string;
+  description: string;
+}
+
 export interface AssetAllocation {
   asset: Asset;
   drawdownPercentage: number;
   points: number;
+  tramo: TramoInfo;
   weightedValue: number;
   dynamicPoolPercentage: number;
   baseAllocation: number;

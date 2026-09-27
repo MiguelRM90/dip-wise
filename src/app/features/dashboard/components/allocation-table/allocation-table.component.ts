@@ -138,11 +138,20 @@ import { AssetAllocation } from '../../../../core/models/portfolio.model';
                   </span>
                 </td>
 
-                <!-- Points -->
+                <!-- Points & Tramo Behavior -->
                 <td class="py-3 px-3 whitespace-nowrap text-center">
-                  <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs">
-                    {{ row.points }}
-                  </span>
+                  <div class="flex flex-col items-center justify-center gap-0.5" [title]="row.tramo.description">
+                    <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-extrabold text-xs shadow-xs border border-slate-200 dark:border-slate-700">
+                      {{ row.points }} pts
+                    </span>
+                    <span
+                      class="text-[9px] font-semibold px-1.5 py-0.2 rounded flex items-center gap-1 cursor-help"
+                      [ngClass]="getTramoBadgeClasses(row.drawdownPercentage)"
+                    >
+                      <span>{{ row.tramo.icon }}</span>
+                      <span>{{ row.tramo.badge }}</span>
+                    </span>
+                  </div>
                 </td>
 
                 <!-- Weight & Multiplier -->
@@ -270,23 +279,59 @@ export class AllocationTableComponent {
     }
   }
 
-  getDrawdownClasses(drawdown: number): Record<string, boolean> {
-    if (drawdown <= 0) {
+  getTramoBadgeClasses(drawdown: number): Record<string, boolean> {
+    if (drawdown <= 2.0) {
       return {
-        'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300/40': true,
+        'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 border border-cyan-300/40': true,
       };
     }
-    if (drawdown <= 10) {
+    if (drawdown <= 5.0) {
+      return {
+        'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300/40': true,
+      };
+    }
+    if (drawdown <= 10.0) {
+      return {
+        'bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 border border-teal-300/40': true,
+      };
+    }
+    if (drawdown <= 15.0) {
+      return {
+        'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300/40': true,
+      };
+    }
+    if (drawdown <= 20.0) {
+      return {
+        'bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border border-orange-300/40': true,
+      };
+    }
+    return {
+      'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border border-purple-300/40': true,
+    };
+  }
+
+  getDrawdownClasses(drawdown: number): Record<string, boolean> {
+    if (drawdown <= 2.0) {
+      return {
+        'bg-cyan-100 dark:bg-cyan-950/70 text-cyan-800 dark:text-cyan-300 border border-cyan-300/40': true,
+      };
+    }
+    if (drawdown <= 5.0) {
+      return {
+        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/40': true,
+      };
+    }
+    if (drawdown <= 10.0) {
       return {
         'bg-teal-100 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 border border-teal-300/40': true,
       };
     }
-    if (drawdown <= 20) {
+    if (drawdown <= 20.0) {
       return {
         'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300/40': true,
       };
     }
-    if (drawdown <= 30) {
+    if (drawdown <= 30.0) {
       return {
         'bg-orange-100 dark:bg-orange-950/70 text-orange-800 dark:text-orange-300 border border-orange-300/40': true,
       };

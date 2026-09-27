@@ -5,6 +5,7 @@ import {
   AssetAllocation,
   PortfolioSummary,
   PortfolioSettings,
+  TramoInfo,
 } from '../models/portfolio.model';
 
 @Injectable({
@@ -26,28 +27,81 @@ export class DcaEngineService {
   });
 
   /**
-   * Calculate points based on drawdown bracket from ATH.
-   * Corrected bracket rules:
-   * - Drawdown <= 0%: 0 pts (at ATH)
-   * - 0% to 5%: 1 pt
-   * - 5% to 10%: 15 pts
-   * - 10% to 15%: 17 pts
-   * - 15% to 20%: 20 pts
-   * - 20% to 25%: 25 pts
-   * - 25% to 30%: 35 pts
-   * - 30% to 35%: 50 pts
-   * - > 35%: 75 pts
+   * Calculate points based on drawdown bracket from ATH with Momentum support.
+   * New Scale:
+   * - Drawdown <= 2.0%: 16 pts (Zona Máximos / Momentum - 🚀 Máximo impulso alcista)
+   * - 2.0% to 5.0%: 4 pts (Ruido / Consolidación leve - ⚖️ Transición neutra)
+   * - 5.0% to 10.0%: 15 pts (Corrección inicial - 🛒 Comienzan las compras con descuento)
+   * - 10.0% to 15.0%: 17 pts (Corrección técnica - 🛒 Rebaja moderada)
+   * - 15.0% to 20.0%: 20 pts (Corrección media - 🛒 Rebaja notable)
+   * - > 20.0%: 25 - 75 pts (Mercado bajista / Oportunidad - 💎 Acumulación masiva en desplomes):
+   *     - 20.0% to 25.0%: 25 pts
+   *     - 25.0% to 30.0%: 35 pts
+   *     - 30.0% to 35.0%: 50 pts
+   *     - > 35.0%: 75 pts
    */
   calculatePoints(drawdownPercentage: number): number {
-    if (drawdownPercentage <= 0) return 0;
-    if (drawdownPercentage <= 5) return 1;
-    if (drawdownPercentage <= 10) return 15;
-    if (drawdownPercentage <= 15) return 17;
-    if (drawdownPercentage <= 20) return 20;
-    if (drawdownPercentage <= 25) return 25;
-    if (drawdownPercentage <= 30) return 35;
-    if (drawdownPercentage <= 35) return 50;
+    if (drawdownPercentage <= 2.0) return 16;
+    if (drawdownPercentage <= 5.0) return 4;
+    if (drawdownPercentage <= 10.0) return 15;
+    if (drawdownPercentage <= 15.0) return 17;
+    if (drawdownPercentage <= 20.0) return 20;
+    if (drawdownPercentage <= 25.0) return 25;
+    if (drawdownPercentage <= 30.0) return 35;
+    if (drawdownPercentage <= 35.0) return 50;
     return 75;
+  }
+
+  /**
+   * Returns human-readable behavioral financial metadata for a given drawdown
+   */
+  getTramoInfo(drawdownPercentage: number): TramoInfo {
+    if (drawdownPercentage <= 2.0) {
+      return {
+        name: 'Zona Máximos / Momentum',
+        badge: 'Momentum',
+        icon: '🚀',
+        description: 'Máximo impulso alcista (ATH y consolidación en techo)',
+      };
+    }
+    if (drawdownPercentage <= 5.0) {
+      return {
+        name: 'Ruido / Consolidación leve',
+        badge: 'Ruido / Neutro',
+        icon: '⚖️',
+        description: 'Transición neutra (ni momentum ni descuento)',
+      };
+    }
+    if (drawdownPercentage <= 10.0) {
+      return {
+        name: 'Corrección inicial',
+        badge: 'Descuento inicial',
+        icon: '🛒',
+        description: 'Comienzan las compras con descuento (-5% a -10%)',
+      };
+    }
+    if (drawdownPercentage <= 15.0) {
+      return {
+        name: 'Corrección técnica',
+        badge: 'Rebaja moderada',
+        icon: '🛒',
+        description: 'Rebaja moderada (-10% a -15%)',
+      };
+    }
+    if (drawdownPercentage <= 20.0) {
+      return {
+        name: 'Corrección media',
+        badge: 'Rebaja notable',
+        icon: '🛒',
+        description: 'Rebaja notable (-15% a -20%)',
+      };
+    }
+    return {
+      name: 'Mercado bajista / Oportunidad',
+      badge: 'Acumulación masiva',
+      icon: '💎',
+      description: 'Acumulación masiva en desplomes (>20% de caída)',
+    };
   }
 
   /**
@@ -100,6 +154,7 @@ export class DcaEngineService {
     const equityIntermediate = equityAssets.map((asset) => {
       const drawdown = this.calculateDrawdown(asset.currentPrice, asset.athPrice);
       const points = this.calculatePoints(drawdown);
+      const tramo = this.getTramoInfo(drawdown);
       const multiplier = Math.max(0, asset.dynamicMultiplier || 1);
       const weightedValue = points * multiplier;
 
@@ -114,6 +169,7 @@ export class DcaEngineService {
         asset,
         drawdown,
         points,
+        tramo,
         weightedValue,
         baseShare,
         baseAllocation,
@@ -134,7 +190,7 @@ export class DcaEngineService {
         dynamicPoolPercentage = (item.weightedValue / totalWeightedPoints) * 100;
         extraAllocation = dynamicEquityPool * (dynamicPoolPercentage / 100);
       } else {
-        // Fallback: If all equities are at ATH (points = 0), distribute dynamic pool by strategic base weight
+        // Fallback: If totalWeightedPoints is 0, distribute dynamic pool by strategic base weight
         dynamicPoolPercentage = item.baseShare * 100;
         extraAllocation = dynamicEquityPool * item.baseShare;
       }
@@ -145,6 +201,7 @@ export class DcaEngineService {
         asset: item.asset,
         drawdownPercentage: item.drawdown,
         points: item.points,
+        tramo: item.tramo,
         weightedValue: item.weightedValue,
         dynamicPoolPercentage: Math.round(dynamicPoolPercentage * 100) / 100,
         baseAllocation: item.baseAllocation,
@@ -161,7 +218,6 @@ export class DcaEngineService {
 
     const safeHavenCalculated = safeHavenAssets.map((asset) => {
       const drawdown = this.calculateDrawdown(asset.currentPrice, asset.athPrice);
-      const points = this.calculatePoints(drawdown);
 
       const baseShare =
         safeHavenBaseWeightSum > 0
@@ -173,7 +229,13 @@ export class DcaEngineService {
       return {
         asset,
         drawdownPercentage: drawdown,
-        points,
+        points: 0,
+        tramo: {
+          name: 'Activo Refugio / Oro',
+          badge: 'Defensivo',
+          icon: '🪙',
+          description: 'Asignación estratégica fija anticrisis y descorrelación',
+        },
         weightedValue: 0,
         dynamicPoolPercentage: 0,
         baseAllocation,

@@ -43,18 +43,15 @@ The tactical allocation algorithm operates in five distinct phases:
 For each asset:
 $$\text{Drawdown \%} = \frac{\text{ATH} - \text{Current Price}}{\text{ATH}} \times 100$$
 
-### 3. Bracket Points Scale
-| Drawdown from ATH | Assigned Points | Tactical Meaning |
-| :--- | :---: | :--- |
-| $\le 0\%$ (At or above ATH) | **0 pts** | No discount; reserve extra pool |
-| $> 0\%$ and $\le 5\%$ | **1 pt** | Minor discount |
-| $> 5\%$ and $\le 10\%$ | **15 pts** | Moderate pullback |
-| $> 10\%$ and $\le 15\%$ | **17 pts** | Notable correction |
-| $> 15\%$ and $\le 20\%$ | **20 pts** | Standard market dip |
-| $> 20\%$ and $\le 25\%$ | **25 pts** | Strong buying opportunity |
-| $> 25\%$ and $\le 30\%$ | **35 pts** | Bear market territory |
-| $> 30\%$ and $\le 35\%$ | **50 pts** | Severe crash |
-| $> 35\%$ | **75 pts** | Exceptional generational discount |
+### 3. Momentum & Drawdown Bracket Scale
+| Drawdown from ATH | Max Drawdown (%) | Assigned Points | Tactical Financial Behavior |
+| :--- | :---: | :---: | :--- |
+| **All-Time High / Momentum Zone** | **$\le 2.0\%$** | **16 pts** | 🚀 Peak bullish momentum (ATH breakout & roof consolidation) |
+| **Market Noise / Mild Consolidation** | **$\le 5.0\%$** | **4 pts** | ⚖️ Neutral transition zone (neither momentum nor discount) |
+| **Initial Pullback** | **$\le 10.0\%$** | **15 pts** | 🛒 Discount buying begins (-5% to -10%) |
+| **Technical Correction** | **$\le 15.0\%$** | **17 pts** | 🛒 Moderate discount (-10% to -15%) |
+| **Moderate Correction** | **$\le 20.0\%$** | **20 pts** | 🛒 Substantial discount (-15% to -20%) |
+| **Bear Market / Opportunity** | **$> 20.0\%$** | **25 – 75 pts** | 💎 Massive accumulation in market crashes (-25%: 25p, -30%: 35p, -35%: 50p, >35%: 75p) |
 
 ### 4. Dynamic Distribution
 For each Equity asset $i$:
