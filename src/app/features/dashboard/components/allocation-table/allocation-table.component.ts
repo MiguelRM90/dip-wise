@@ -1,12 +1,11 @@
-import { Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DcaEngineService } from '../../../../core/services/dca-engine.service';
-import { StorageService } from '../../../../core/services/storage.service';
-import { QuoteService } from '../../../../core/services/quote.service';
 import { PwaToastService } from 'pwa-ui-core/services';
 import { Asset } from '../../../../core/models/asset.model';
-import { AssetAllocation } from '../../../../core/models/portfolio.model';
+import { DcaEngineService } from '../../../../core/services/dca-engine.service';
+import { QuoteService } from '../../../../core/services/quote.service';
+import { StorageService } from '../../../../core/services/storage.service';
 
 @Component({
   selector: 'app-allocation-table',
