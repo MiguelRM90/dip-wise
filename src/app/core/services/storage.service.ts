@@ -90,7 +90,9 @@ export class StorageService {
 
   saveAsset(asset: Asset): void {
     this.assets.update((current) => {
-      const index = current.findIndex((a) => a.id === asset.id || (a.isin === asset.isin && a.isin.trim().length > 0));
+      const index = current.findIndex(
+        (a) => a.id === asset.id || (a.isin === asset.isin && a.isin.trim().length > 0),
+      );
       if (index >= 0) {
         const updated = [...current];
         updated[index] = { ...current[index], ...asset };
@@ -106,11 +108,16 @@ export class StorageService {
 
   updateInlinePrices(id: string, currentPrice: number, athPrice: number): void {
     this.assets.update((current) =>
-      current.map((a) => (a.id === id ? { ...a, currentPrice, athPrice } : a))
+      current.map((a) => (a.id === id ? { ...a, currentPrice, athPrice } : a)),
     );
   }
 
-  updateAssetStatus(id: string, status: Asset['status'], statusMessage?: string, lastUpdated?: string): void {
+  updateAssetStatus(
+    id: string,
+    status: Asset['status'],
+    statusMessage?: string,
+    lastUpdated?: string,
+  ): void {
     this.assets.update((current) =>
       current.map((a) =>
         a.id === id
@@ -120,8 +127,8 @@ export class StorageService {
               statusMessage: statusMessage ?? a.statusMessage,
               lastUpdated: lastUpdated ?? a.lastUpdated,
             }
-          : a
-      )
+          : a,
+      ),
     );
   }
 

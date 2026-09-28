@@ -1,0 +1,292 @@
+@let s = dcaEngine.summary();
+
+<div
+  class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+>
+  <!-- Table Header & Controls -->
+  <div
+    class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+  >
+    <div>
+      <div class="flex items-center gap-2">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white">
+          Cálculo de Aportación Táctica por Activo
+        </h2>
+        <span
+          class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+        >
+          {{ s.allocations.length }}
+        </span>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        Edita los precios y ATH directamente en las casillas para simulación inmediata.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button
+        (click)="openAddAsset.emit()"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-colors"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+        <span>Nuevo Activo</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Table / Responsive View -->
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse text-xs">
+      <thead>
+        <tr
+          class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]"
+        >
+          <th scope="col" class="py-3 px-4">Activo / ISIN</th>
+          <th scope="col" class="py-3 px-3">Categoría</th>
+          <th scope="col" class="py-3 px-3">ATH (€)</th>
+          <th scope="col" class="py-3 px-3">Precio Actual (€)</th>
+          <th scope="col" class="py-3 px-3 text-center">Caída %</th>
+          <th scope="col" class="py-3 px-3 text-center">Puntos</th>
+          <th scope="col" class="py-3 px-3 text-center">Pond. / Mult.</th>
+          <th scope="col" class="py-3 px-3 text-right">Extra (€)</th>
+          <th scope="col" class="py-3 px-4 text-right">Aportación (€)</th>
+          <th scope="col" class="py-3 px-3 text-right">% Cartera</th>
+          <th scope="col" class="py-3 px-3 text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody
+        class="divide-y divide-slate-100 dark:divide-slate-800/60 text-slate-800 dark:text-slate-200"
+      >
+        @for (row of s.allocations; track row.asset.id) {
+          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
+            <!-- Asset Info -->
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>{{ row.asset.ticker }}</span>
+                <!-- Status Indicator -->
+                @if (row.asset.status === 'loading') {
+                  <span
+                    class="inline-block w-2 h-2 rounded-full bg-sky-500 animate-ping"
+                    title="Actualizando cotización..."
+                  ></span>
+                } @else if (row.asset.status === 'error') {
+                  <span
+                    class="inline-block w-2 h-2 rounded-full bg-rose-500 cursor-pointer"
+                    [title]="row.asset.statusMessage || 'Error de cotización'"
+                  ></span>
+                } @else if (row.asset.status === 'success') {
+                  <span
+                    class="inline-block w-2 h-2 rounded-full bg-emerald-500"
+                    [title]="row.asset.statusMessage || 'Cotización actualizada'"
+                  ></span>
+                }
+              </div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                {{ row.asset.isin }}
+              </div>
+              <div
+                class="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[180px]"
+                [title]="row.asset.name"
+              >
+                {{ row.asset.name }}
+              </div>
+            </td>
+
+            <!-- Category -->
+            <td class="py-3 px-3 whitespace-nowrap">
+              @if (row.asset.category === 'equity') {
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/50"
+                >
+                  Renta Variable
+                </span>
+              } @else {
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50"
+                >
+                  Oro / Refugio
+                </span>
+              }
+            </td>
+
+            <!-- ATH (Inline Editable) -->
+            <td class="py-3 px-3 whitespace-nowrap">
+              <div class="relative w-24">
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  [ngModel]="row.asset.athPrice"
+                  (ngModelChange)="onPriceChange(row.asset, row.asset.currentPrice, $event)"
+                  class="w-full px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-right transition-colors"
+                />
+              </div>
+            </td>
+
+            <!-- Current Price (Inline Editable) -->
+            <td class="py-3 px-3 whitespace-nowrap">
+              <div class="relative w-24">
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  [ngModel]="row.asset.currentPrice"
+                  (ngModelChange)="onPriceChange(row.asset, $event, row.asset.athPrice)"
+                  class="w-full px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-right transition-colors"
+                />
+              </div>
+            </td>
+
+            <!-- Drawdown % -->
+            <td class="py-3 px-3 whitespace-nowrap text-center">
+              <span
+                class="inline-block px-2 py-0.5 rounded-md font-bold text-xs"
+                [ngClass]="getDrawdownClasses(row.drawdownPercentage)"
+              >
+                {{ row.drawdownPercentage > 0 ? '-' : ''
+                }}{{ Math.abs(row.drawdownPercentage) | number: '1.2-2' }}%
+              </span>
+            </td>
+
+            <!-- Points & Tramo Behavior -->
+            <td class="py-3 px-3 whitespace-nowrap text-center">
+              <div
+                class="flex flex-col items-center justify-center gap-0.5"
+                [title]="row.tramo.description"
+              >
+                <span
+                  class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-extrabold text-xs shadow-xs border border-slate-200 dark:border-slate-700"
+                >
+                  {{ row.points }} pts
+                </span>
+                <span
+                  class="text-[9px] font-semibold px-1.5 py-0.2 rounded flex items-center gap-1 cursor-help"
+                  [ngClass]="getTramoBadgeClasses(row.drawdownPercentage)"
+                >
+                  <span>{{ row.tramo.icon }}</span>
+                  <span>{{ row.tramo.badge }}</span>
+                </span>
+              </div>
+            </td>
+
+            <!-- Weight & Multiplier -->
+            <td
+              class="py-3 px-3 whitespace-nowrap text-center text-[11px] text-slate-600 dark:text-slate-400"
+            >
+              <span class="font-semibold text-slate-800 dark:text-slate-200"
+                >{{ row.asset.baseWeightPercentage }}%</span
+              >
+              @if (row.asset.category === 'equity') {
+                <span class="text-slate-400 text-[10px]">
+                  (×{{ row.asset.dynamicMultiplier }})</span
+                >
+              }
+            </td>
+
+            <!-- Extra Dinámico (€) -->
+            <td class="py-3 px-3 whitespace-nowrap text-right font-mono font-medium">
+              @if (row.asset.category === 'equity') {
+                <span
+                  [class.text-emerald-600]="row.extraAllocation > 0"
+                  [class.dark:text-emerald-400]="row.extraAllocation > 0"
+                >
+                  +{{ row.extraAllocation | currency: 'EUR' : 'symbol' : '1.2-2' }}
+                </span>
+              } @else {
+                <span class="text-slate-400 dark:text-slate-600">—</span>
+              }
+            </td>
+
+            <!-- Aportación Recomendada (€) -->
+            <td class="py-3 px-4 whitespace-nowrap text-right">
+              <div
+                class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-sky-100 dark:bg-sky-950/70 border border-sky-300 dark:border-sky-800 text-sky-900 dark:text-sky-200 font-extrabold text-sm shadow-sm"
+              >
+                {{ row.finalAllocation | currency: 'EUR' : 'symbol' : '1.2-2' }}
+              </div>
+            </td>
+
+            <!-- % Total Cartera -->
+            <td
+              class="py-3 px-3 whitespace-nowrap text-right font-semibold text-slate-700 dark:text-slate-300"
+            >
+              {{ row.portfolioWeightPercentage | number: '1.1-1' }}%
+            </td>
+
+            <!-- Actions -->
+            <td class="py-3 px-3 whitespace-nowrap text-center">
+              <div class="flex items-center justify-center gap-1">
+                <!-- Refresh single -->
+                <button
+                  (click)="refreshAsset(row.asset)"
+                  class="p-1 rounded-md text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  title="Refrescar cotización individual"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Edit asset -->
+                <button
+                  (click)="editAsset.emit(row.asset)"
+                  class="p-1 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  title="Editar datos del activo"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Delete asset -->
+                <button
+                  (click)="deleteAsset(row.asset)"
+                  class="p-1 rounded-md text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  title="Eliminar activo"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="11" class="py-12 text-center text-slate-400 dark:text-slate-500">
+              <div class="flex flex-col items-center justify-center gap-2">
+                <span class="text-3xl">📭</span>
+                <span class="text-sm font-semibold">No hay activos registrados en tu cartera</span>
+                <span class="text-xs"
+                  >Haz clic en "Nuevo Activo" para añadir tus fondos o ETFs por ISIN.</span
+                >
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

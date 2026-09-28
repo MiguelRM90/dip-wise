@@ -1,0 +1,287 @@
+<div
+  class="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors"
+>
+  <!-- Application Header -->
+  <app-header
+    (openAddAsset)="openAddAssetModal()"
+    (openSettings)="openSettingsModal()"
+  ></app-header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- KPI Summary Row -->
+    <section>
+      <app-kpi-cards></app-kpi-cards>
+    </section>
+
+    <!-- Main Grid: Table & Donut Chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <!-- Allocation Table (Span 2 cols on lg) -->
+      <section class="lg:col-span-2">
+        <app-allocation-table
+          (openAddAsset)="openAddAssetModal()"
+          (editAsset)="openEditAssetModal($event)"
+        ></app-allocation-table>
+      </section>
+
+      <!-- Allocation Donut Chart (Span 1 col on lg) -->
+      <section class="lg:col-span-1">
+        <app-allocation-chart></app-allocation-chart>
+      </section>
+    </div>
+
+    <!-- Educational & Strategy Explainer -->
+    <section
+      class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-5 transition-all"
+    >
+      <div
+        class="flex items-center justify-between cursor-pointer select-none"
+        (click)="showStrategyExplainer.set(!showStrategyExplainer())"
+      >
+        <div class="flex items-center gap-2.5">
+          <span class="p-1.5 rounded-lg bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </span>
+          <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">
+            Metodología Financiera & Algoritmo de Asignación Táctica ATH
+          </h3>
+        </div>
+        <button
+          type="button"
+          class="text-xs text-sky-600 dark:text-sky-400 font-semibold hover:underline"
+        >
+          {{ showStrategyExplainer() ? 'Ocultar detalles ▲' : 'Ver algoritmo ▼' }}
+        </button>
+      </div>
+
+      @if (showStrategyExplainer()) {
+        <div
+          class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-4"
+        >
+          <p>
+            <strong>DipWise</strong> implementa una estrategia híbrida de
+            <em>Value Averaging + Momentum</em>. En lugar de detener compras en máximos, premia el
+            <strong>impulso alcista en zona de máximos (16 pts)</strong>, penaliza la zona de
+            ruido/transición (4 pts), y escala agresivamente las compras en correcciones técnicas y
+            desplomes (15 a 75 pts):
+          </p>
+
+          <div class="overflow-x-auto">
+            <table
+              class="w-full text-left border-collapse text-xs bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800"
+            >
+              <thead>
+                <tr
+                  class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-[11px] border-b border-slate-200 dark:border-slate-800"
+                >
+                  <th class="py-2.5 px-3">Tramo de caída</th>
+                  <th class="py-2.5 px-3 text-center">Caída máx. (%)</th>
+                  <th class="py-2.5 px-3 text-center">Puntos asignados</th>
+                  <th class="py-2.5 px-3">Comportamiento financiero</th>
+                </tr>
+              </thead>
+              <tbody
+                class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300 text-[11px]"
+              >
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-cyan-600 dark:text-cyan-400">
+                    Zona Momentum (hasta 2%)
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">2,0 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 font-bold text-cyan-700 dark:text-cyan-300"
+                      >16 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">
+                    🚀 Máximo impulso alcista (ATH y consolidación en techo)
+                  </td>
+                </tr>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-slate-600 dark:text-slate-400">
+                    Consolidación (entre 2% y 5%)
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">5,0 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300"
+                      >4 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">⚖️ Transición neutra (ni momentum ni descuento)</td>
+                </tr>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-teal-600 dark:text-teal-400">
+                    Entre 5% y 10%
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">10,0 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 font-bold text-teal-700 dark:text-teal-300"
+                      >15 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">🛒 Comienzan las compras con descuento</td>
+                </tr>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-amber-600 dark:text-amber-400">
+                    Entre 10% y 15%
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">15,0 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 font-bold text-amber-700 dark:text-amber-300"
+                      >17 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">🛒 Rebaja moderada</td>
+                </tr>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-orange-600 dark:text-orange-400">
+                    Entre 15% y 20%
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">20,0 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950 font-bold text-orange-700 dark:text-orange-300"
+                      >20 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">🛒 Rebaja notable</td>
+                </tr>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-purple-600 dark:text-purple-400">
+                    Entre 20% y 25%
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">25,0 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 font-bold text-purple-700 dark:text-purple-300"
+                      >25 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">💎 Compras agresivas / Descuento fuerte</td>
+                </tr>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-purple-600 dark:text-purple-400">
+                    Entre 25% y 30%
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">30,0 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 font-bold text-purple-700 dark:text-purple-300"
+                      >35 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">💎 Corrección severa / Mercado bajista</td>
+                </tr>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-purple-600 dark:text-purple-400">
+                    Entre 30% y 35%
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">35,0 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 font-bold text-purple-700 dark:text-purple-300"
+                      >50 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">💎 Desplome profundo / Alta acumulación</td>
+                </tr>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td class="py-2 px-3 font-bold text-purple-700 dark:text-purple-300">
+                    Más de un 35%
+                  </td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">&gt; 35 %</td>
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-purple-200 dark:bg-purple-900 font-extrabold text-purple-900 dark:text-purple-100"
+                      >75 pts</span
+                    >
+                  </td>
+                  <td class="py-2 px-3">💎 Desplome extremo / Máxima acumulación histórica</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div
+              class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60"
+            >
+              <h4 class="font-bold text-slate-800 dark:text-slate-200 mb-1">
+                Reparto de Bolsa Dinámica
+              </h4>
+              <p class="text-[11px]">
+                Para cada activo de Renta Variable:
+                <br />
+                <code>Valor Ponderado = Puntos × Multiplicador</code>
+                <br /><br />
+                La bolsa adicional de RV (50%) se reparte de forma proporcional a los puntos
+                ponderados obtenidos.
+              </p>
+            </div>
+
+            <div
+              class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60"
+            >
+              <h4 class="font-bold text-slate-800 dark:text-slate-200 mb-1">
+                Algoritmo Hare-Niemeyer
+              </h4>
+              <p class="text-[11px]">
+                Garantiza que la suma de aportaciones redondeadas a enteros coincida
+                <strong>exactamente con el presupuesto periódico</strong> (ej. 600,00 € exactos sin
+                desajustes).
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer
+    class="mt-auto border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 transition-colors"
+  >
+    <div
+      class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3"
+    >
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-700 dark:text-slate-300">DipWise</span>
+        <span>•</span>
+        <span>Código Abierto &amp; PWA Client-Side</span>
+        <span>•</span>
+        <span class="text-emerald-600 dark:text-emerald-400 font-semibold"
+          >100% Privado (sin servidores externos)</span
+        >
+      </div>
+      <div>
+        <span>Listo para despliegue en GitHub Pages</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal Dialogs -->
+  <app-asset-modal
+    [isOpen]="isAssetModalOpen()"
+    [editingAsset]="editingAsset()"
+    (close)="closeAssetModal()"
+  ></app-asset-modal>
+
+  <app-settings-modal
+    [isOpen]="isSettingsModalOpen()"
+    (close)="closeSettingsModal()"
+  ></app-settings-modal>
+
+  <!-- Global Toast Feedback -->
+  <pwa-toast-container></pwa-toast-container>
+</div>

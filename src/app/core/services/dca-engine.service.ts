@@ -171,7 +171,7 @@ export class DcaEngineService {
     // Equities: Sum of base weights
     const equityBaseWeightSum = equityAssets.reduce(
       (acc, a) => acc + Math.max(0, a.baseWeightPercentage),
-      0
+      0,
     );
 
     // Compute drawdowns, points, and dynamic weighted points for equities
@@ -202,7 +202,7 @@ export class DcaEngineService {
 
     const totalWeightedPoints = equityIntermediate.reduce(
       (acc, item) => acc + item.weightedValue,
-      0
+      0,
     );
 
     // Compute extra allocation from dynamic pool for equities
@@ -237,7 +237,7 @@ export class DcaEngineService {
     // Safe Haven: Sum of base weights
     const safeHavenBaseWeightSum = safeHavenAssets.reduce(
       (acc, a) => acc + Math.max(0, a.baseWeightPercentage),
-      0
+      0,
     );
 
     const safeHavenCalculated = safeHavenAssets.map((asset) => {
@@ -334,8 +334,7 @@ export class DcaEngineService {
     const allocations: AssetAllocation[] = allTheoretical.map((item, index) => {
       const finalUnits = finalAllocationsMap.get(index) ?? 0;
       const finalAllocation = finalUnits / multiplier;
-      const portfolioWeightPercentage =
-        totalBudget > 0 ? (finalAllocation / totalBudget) * 100 : 0;
+      const portfolioWeightPercentage = totalBudget > 0 ? (finalAllocation / totalBudget) * 100 : 0;
 
       return {
         ...item,

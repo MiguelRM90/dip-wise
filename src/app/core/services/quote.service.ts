@@ -19,9 +19,7 @@ export class QuoteService {
   private readonly storage = inject(StorageService);
 
   readonly isUpdating = signal<boolean>(false);
-  readonly lastSyncTimestamp = signal<string | null>(
-    localStorage.getItem('dipwise_last_sync')
-  );
+  readonly lastSyncTimestamp = signal<string | null>(localStorage.getItem('dipwise_last_sync'));
 
   /**
    * Refreshes market quotes for all assets in the portfolio
@@ -41,9 +39,7 @@ export class QuoteService {
     }
 
     // Process concurrently with rate-limiting safety
-    const results = await Promise.allSettled(
-      assets.map((asset) => this.fetchQuoteForAsset(asset))
-    );
+    const results = await Promise.allSettled(assets.map((asset) => this.fetchQuoteForAsset(asset)));
 
     const nowIso = new Date().toISOString();
 
@@ -60,17 +56,16 @@ export class QuoteService {
           asset.id,
           'success',
           `Updated at ${new Date().toLocaleTimeString()}`,
-          nowIso
+          nowIso,
         );
       } else {
         failureCount++;
-        const errorMsg =
-          res.status === 'fulfilled' ? res.value.error : 'Network connection failed';
+        const errorMsg = res.status === 'fulfilled' ? res.value.error : 'Network connection failed';
         this.storage.updateAssetStatus(
           asset.id,
           'error',
           errorMsg || 'Failed to fetch quote. Manual entry available.',
-          nowIso
+          nowIso,
         );
       }
     });
@@ -101,14 +96,14 @@ export class QuoteService {
         asset.id,
         'success',
         `Updated at ${new Date().toLocaleTimeString()}`,
-        nowIso
+        nowIso,
       );
     } else {
       this.storage.updateAssetStatus(
         asset.id,
         'error',
         result.error || 'Failed to fetch quote',
-        nowIso
+        nowIso,
       );
     }
 
@@ -129,7 +124,7 @@ export class QuoteService {
 
     try {
       const response = await firstValueFrom(
-        this.http.get<YahooSearchResponse>(requestUrl).pipe(timeout(10000))
+        this.http.get<YahooSearchResponse>(requestUrl).pipe(timeout(10000)),
       );
       return response.quotes || [];
     } catch (err: unknown) {
@@ -146,14 +141,10 @@ export class QuoteService {
     if (!quotes || quotes.length === 0) return null;
 
     // Prioritize European EUR exchanges (.AS, .DE, .PA, .MI, .MC) for UCITS ETFs
-    const eurExchangeMatch = quotes.find((q) =>
-      /\.(AS|DE|PA|MI|MC|F)$/i.test(q.symbol)
-    );
+    const eurExchangeMatch = quotes.find((q) => /\.(AS|DE|PA|MI|MC|F)$/i.test(q.symbol));
 
     // Secondary: Any ETF or mutual fund
-    const etfMatch = quotes.find(
-      (q) => q.quoteType === 'ETF' || q.quoteType === 'MUTUALFUND'
-    );
+    const etfMatch = quotes.find((q) => q.quoteType === 'ETF' || q.quoteType === 'MUTUALFUND');
 
     const bestMatch = eurExchangeMatch || etfMatch || quotes[0];
 
@@ -207,11 +198,7 @@ export class QuoteService {
           return await this.fetchAlphaVantageQuote(ticker, asset.isin, apiKey);
 
         case 'custom_proxy':
-          return await this.fetchCustomProxyQuote(
-            ticker,
-            asset.isin,
-            customProxyUrlTemplate
-          );
+          return await this.fetchCustomProxyQuote(ticker, asset.isin, customProxyUrlTemplate);
 
         default:
           return await this.fetchYahooCorsQuote(ticker, asset.isin, corsProxyUrl);
@@ -230,14 +217,14 @@ export class QuoteService {
   private async fetchYahooCorsQuote(
     ticker: string,
     isin: string,
-    corsProxyUrl: string
+    corsProxyUrl: string,
   ): Promise<QuoteFetchResult> {
     const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1y`;
     const proxyBase = corsProxyUrl || 'https://api.allorigins.win/raw?url=';
     const requestUrl = `${proxyBase}${encodeURIComponent(targetUrl)}`;
 
     const response = await firstValueFrom(
-      this.http.get<YahooChartResponse>(requestUrl).pipe(timeout(10000))
+      this.http.get<YahooChartResponse>(requestUrl).pipe(timeout(10000)),
     );
 
     const result = response.chart?.result?.[0];
@@ -276,7 +263,7 @@ export class QuoteService {
   private async fetchFmpQuote(
     ticker: string,
     isin: string,
-    apiKey: string
+    apiKey: string,
   ): Promise<QuoteFetchResult> {
     if (!apiKey) {
       return {
@@ -294,9 +281,7 @@ export class QuoteService {
     }
 
     const url = `https://financialmodelingprep.com/api/v3/quote/${encodeURIComponent(ticker)}?apikey=${apiKey}`;
-    const data = await firstValueFrom(
-      this.http.get<FmpItem[]>(url).pipe(timeout(10000))
-    );
+    const data = await firstValueFrom(this.http.get<FmpItem[]>(url).pipe(timeout(10000)));
 
     if (Array.isArray(data) && data.length > 0) {
       const item = data[0];
@@ -321,7 +306,7 @@ export class QuoteService {
   private async fetchAlphaVantageQuote(
     ticker: string,
     isin: string,
-    apiKey: string
+    apiKey: string,
   ): Promise<QuoteFetchResult> {
     if (!apiKey) {
       return {
@@ -340,9 +325,7 @@ export class QuoteService {
     }
 
     const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(ticker)}&apikey=${apiKey}`;
-    const data = await firstValueFrom(
-      this.http.get<AvResponse>(url).pipe(timeout(10000))
-    );
+    const data = await firstValueFrom(this.http.get<AvResponse>(url).pipe(timeout(10000)));
 
     const quote = data['Global Quote'];
     if (quote && quote['05. price']) {
@@ -368,7 +351,7 @@ export class QuoteService {
   private async fetchCustomProxyQuote(
     ticker: string,
     isin: string,
-    urlTemplate: string
+    urlTemplate: string,
   ): Promise<QuoteFetchResult> {
     if (!urlTemplate) {
       return {
@@ -389,9 +372,7 @@ export class QuoteService {
       name?: string;
     }
 
-    const data = await firstValueFrom(
-      this.http.get<GenericQuote>(finalUrl).pipe(timeout(10000))
-    );
+    const data = await firstValueFrom(this.http.get<GenericQuote>(finalUrl).pipe(timeout(10000)));
 
     if (data && typeof data.price === 'number') {
       return {

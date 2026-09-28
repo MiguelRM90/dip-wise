@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { PwaToastContainerComponent } from 'pwa-ui-core/components';
-import { Asset } from './core/models/asset.model';
-import { AssetModalComponent } from './features/assets/components/asset-modal/asset-modal.component';
-import { AllocationChartComponent } from './features/dashboard/components/allocation-chart/allocation-chart.component';
-import { AllocationTableComponent } from './features/dashboard/components/allocation-table/allocation-table.component';
-import { KpiCardsComponent } from './features/dashboard/components/kpi-cards/kpi-cards.component';
-import { SettingsModalComponent } from './features/settings/components/settings-modal/settings-modal.component';
-import { HeaderComponent } from './shared/components/header/header.component';
+import { Asset } from './core';
+import { AssetModalComponent } from './features/assets';
+import {
+  AllocationChartComponent,
+  AllocationTableComponent,
+  KpiCardsComponent,
+} from './features/dashboard';
+import { SettingsModalComponent } from './features/settings';
+import { HeaderComponent } from './shared';
 
 @Component({
   selector: 'app-root',
@@ -22,10 +24,10 @@ import { HeaderComponent } from './shared/components/header/header.component';
     AssetModalComponent,
     SettingsModalComponent,
   ],
-  templateUrl: './app.html',
-  styleUrl: './app.css',
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css',
 })
-export class App {
+export class AppComponent {
   readonly isAssetModalOpen = signal<boolean>(false);
   readonly editingAsset = signal<Asset | null>(null);
   readonly isSettingsModalOpen = signal<boolean>(false);
