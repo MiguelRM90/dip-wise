@@ -1,13 +1,13 @@
-import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HeaderComponent } from './shared/components/header/header.component';
+import { Component, signal } from '@angular/core';
 import { PwaToastContainerComponent } from 'pwa-ui-core/components';
-import { KpiCardsComponent } from './features/dashboard/components/kpi-cards/kpi-cards.component';
-import { AllocationTableComponent } from './features/dashboard/components/allocation-table/allocation-table.component';
-import { AllocationChartComponent } from './features/dashboard/components/allocation-chart/allocation-chart.component';
-import { AssetModalComponent } from './features/assets/components/asset-modal/asset-modal.component';
-import { SettingsModalComponent } from './features/settings/components/settings-modal/settings-modal.component';
 import { Asset } from './core/models/asset.model';
+import { AssetModalComponent } from './features/assets/components/asset-modal/asset-modal.component';
+import { AllocationChartComponent } from './features/dashboard/components/allocation-chart/allocation-chart.component';
+import { AllocationTableComponent } from './features/dashboard/components/allocation-table/allocation-table.component';
+import { KpiCardsComponent } from './features/dashboard/components/kpi-cards/kpi-cards.component';
+import { SettingsModalComponent } from './features/settings/components/settings-modal/settings-modal.component';
+import { HeaderComponent } from './shared/components/header/header.component';
 
 @Component({
   selector: 'app-root',

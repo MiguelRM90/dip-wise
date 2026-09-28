@@ -1,13 +1,11 @@
-import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { StorageService } from '../../../../core/services/storage.service';
 import { PwaToastService } from 'pwa-ui-core/services';
 import {
-  PortfolioSettings,
-  RoundingMode,
-  QuoteProviderType,
+  PortfolioSettings
 } from '../../../../core/models/portfolio.model';
+import { StorageService } from '../../../../core/services/storage.service';
 
 @Component({
   selector: 'app-settings-modal',

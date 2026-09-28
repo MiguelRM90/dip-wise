@@ -1,6 +1,6 @@
-import { Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ThemeService, PwaService, PwaToastService } from 'pwa-ui-core/services';
+import { Component, inject, output } from '@angular/core';
+import { PwaService, PwaToastService, ThemeService } from 'pwa-ui-core/services';
 import { QuoteService } from '../../../core/services/quote.service';
 
 @Component({
