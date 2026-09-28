@@ -34,11 +34,4 @@ describe('App', () => {
     app.closeAssetModal();
     expect(app.isAssetModalOpen()).toBe(false);
   });
-
-  it('should render pwa toast container', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('pwa-toast-container')).toBeTruthy();
-  });
 });

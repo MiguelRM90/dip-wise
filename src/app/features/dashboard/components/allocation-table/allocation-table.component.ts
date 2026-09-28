@@ -1,11 +1,12 @@
 import { Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PwaToastService } from 'pwa-ui-core/services';
 import { DcaEngineService } from '../../../../core/services/dca-engine.service';
 import { StorageService } from '../../../../core/services/storage.service';
 import { QuoteService } from '../../../../core/services/quote.service';
+import { PwaToastService } from 'pwa-ui-core/services';
 import { Asset } from '../../../../core/models/asset.model';
+import { AssetAllocation } from '../../../../core/models/portfolio.model';
 
 @Component({
   selector: 'app-allocation-table',
@@ -14,30 +15,29 @@ import { Asset } from '../../../../core/models/asset.model';
   template: `
     @let s = dcaEngine.summary();
 
-    <div class="pwa-card" style="padding: 0; overflow: hidden;">
-      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--pwa-border); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;">
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <!-- Table Header & Controls -->
+      <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <h2 style="font-size: var(--pwa-text-base); font-weight: 700; color: var(--pwa-text-primary); margin: 0;">
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-slate-900 dark:text-white">
               Cálculo de Aportación Táctica por Activo
             </h2>
-            <span class="pwa-badge pwa-badge--info">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
               {{ s.allocations.length }}
             </span>
           </div>
-          <p style="font-size: var(--pwa-text-xs); color: var(--pwa-text-secondary); margin: 0.25rem 0 0 0;">
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Edita los precios y ATH directamente en las casillas para simulación inmediata.
           </p>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div class="flex items-center gap-2">
           <button
-            type="button"
             (click)="openAddAsset.emit()"
-            class="pwa-btn pwa-btn--primary pwa-btn--sm"
-            style="background-color: var(--pwa-success);"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-colors"
           >
-            <svg style="width: 1rem; height: 1rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             <span>Nuevo Activo</span>
@@ -45,100 +45,108 @@ import { Asset } from '../../../../core/models/asset.model';
         </div>
       </div>
 
-      <div style="overflow-x: auto;">
-        <table class="pwa-table">
+      <!-- Main Table / Responsive View -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr>
-              <th scope="col">Activo / ISIN</th>
-              <th scope="col">Categoría</th>
-              <th scope="col" style="text-align: right;">ATH (€)</th>
-              <th scope="col" style="text-align: right;">Precio Actual (€)</th>
-              <th scope="col" style="text-align: center;">Caída %</th>
-              <th scope="col" style="text-align: center;">Puntos</th>
-              <th scope="col" style="text-align: center;">Pond. / Mult.</th>
-              <th scope="col" style="text-align: right;">Extra (€)</th>
-              <th scope="col" style="text-align: right;">Aportación (€)</th>
-              <th scope="col" style="text-align: right;">% Cartera</th>
-              <th scope="col" style="text-align: center;">Acciones</th>
+            <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+              <th scope="col" class="py-3 px-4">Activo / ISIN</th>
+              <th scope="col" class="py-3 px-3">Categoría</th>
+              <th scope="col" class="py-3 px-3">ATH (€)</th>
+              <th scope="col" class="py-3 px-3">Precio Actual (€)</th>
+              <th scope="col" class="py-3 px-3 text-center">Caída %</th>
+              <th scope="col" class="py-3 px-3 text-center">Puntos</th>
+              <th scope="col" class="py-3 px-3 text-center">Pond. / Mult.</th>
+              <th scope="col" class="py-3 px-3 text-right">Extra (€)</th>
+              <th scope="col" class="py-3 px-4 text-right">Aportación (€)</th>
+              <th scope="col" class="py-3 px-3 text-right">% Cartera</th>
+              <th scope="col" class="py-3 px-3 text-center">Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 text-slate-800 dark:text-slate-200">
             @for (row of s.allocations; track row.asset.id) {
-              <tr>
-                <td>
-                  <div style="font-weight: 700; color: var(--pwa-text-primary); display: flex; align-items: center; gap: 0.375rem;">
+              <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
+                <!-- Asset Info -->
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <span>{{ row.asset.ticker }}</span>
+                    <!-- Status Indicator -->
                     @if (row.asset.status === 'loading') {
-                      <span class="pwa-badge-dot pwa-badge-dot--pulse" style="color: var(--pwa-brand-500);" title="Actualizando cotización..."></span>
+                      <span class="inline-block w-2 h-2 rounded-full bg-sky-500 animate-ping" title="Actualizando cotización..."></span>
                     } @else if (row.asset.status === 'error') {
-                      <span class="pwa-badge-dot" style="color: var(--pwa-danger); cursor: pointer;" [title]="row.asset.statusMessage || 'Error de cotización'"></span>
+                      <span class="inline-block w-2 h-2 rounded-full bg-rose-500 cursor-pointer" [title]="row.asset.statusMessage || 'Error de cotización'"></span>
                     } @else if (row.asset.status === 'success') {
-                      <span class="pwa-badge-dot" style="color: var(--pwa-success);" [title]="row.asset.statusMessage || 'Cotización actualizada'"></span>
+                      <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" [title]="row.asset.statusMessage || 'Cotización actualizada'"></span>
                     }
                   </div>
-                  <div style="font-size: var(--pwa-text-2xs); color: var(--pwa-text-secondary); font-family: var(--pwa-font-mono);">
+                  <div class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                     {{ row.asset.isin }}
                   </div>
-                  <div style="font-size: var(--pwa-text-2xs); color: var(--pwa-text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="row.asset.name">
+                  <div class="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[180px]" [title]="row.asset.name">
                     {{ row.asset.name }}
                   </div>
                 </td>
 
-                <td style="white-space: nowrap;">
+                <!-- Category -->
+                <td class="py-3 px-3 whitespace-nowrap">
                   @if (row.asset.category === 'equity') {
-                    <span class="pwa-badge" style="background-color: rgba(99, 102, 241, 0.12); color: #6366f1; border-color: rgba(99, 102, 241, 0.3);">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/50">
                       Renta Variable
                     </span>
                   } @else {
-                    <span class="pwa-badge pwa-badge--warning">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
                       Oro / Refugio
                     </span>
                   }
                 </td>
 
-                <td style="white-space: nowrap; text-align: right;">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    [ngModel]="row.asset.athPrice"
-                    (ngModelChange)="onPriceChange(row.asset, row.asset.currentPrice, $event)"
-                    class="pwa-input"
-                    style="width: 5.5rem; min-height: 32px; padding: 0.25rem 0.5rem; text-align: right; font-weight: 600; font-size: var(--pwa-text-xs);"
-                  />
+                <!-- ATH (Inline Editable) -->
+                <td class="py-3 px-3 whitespace-nowrap">
+                  <div class="relative w-24">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      [ngModel]="row.asset.athPrice"
+                      (ngModelChange)="onPriceChange(row.asset, row.asset.currentPrice, $event)"
+                      class="w-full px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-right transition-colors"
+                    />
+                  </div>
                 </td>
 
-                <td style="white-space: nowrap; text-align: right;">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    [ngModel]="row.asset.currentPrice"
-                    (ngModelChange)="onPriceChange(row.asset, $event, row.asset.athPrice)"
-                    class="pwa-input"
-                    style="width: 5.5rem; min-height: 32px; padding: 0.25rem 0.5rem; text-align: right; font-weight: 600; font-size: var(--pwa-text-xs);"
-                  />
+                <!-- Current Price (Inline Editable) -->
+                <td class="py-3 px-3 whitespace-nowrap">
+                  <div class="relative w-24">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      [ngModel]="row.asset.currentPrice"
+                      (ngModelChange)="onPriceChange(row.asset, $event, row.asset.athPrice)"
+                      class="w-full px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-right transition-colors"
+                    />
+                  </div>
                 </td>
 
-                <td style="white-space: nowrap; text-align: center;">
+                <!-- Drawdown % -->
+                <td class="py-3 px-3 whitespace-nowrap text-center">
                   <span
-                    class="pwa-badge"
+                    class="inline-block px-2 py-0.5 rounded-md font-bold text-xs"
                     [ngClass]="getDrawdownClasses(row.drawdownPercentage)"
-                    style="font-weight: 700;"
                   >
                     {{ row.drawdownPercentage > 0 ? '-' : '' }}{{ Math.abs(row.drawdownPercentage) | number: '1.2-2' }}%
                   </span>
                 </td>
 
-                <td style="white-space: nowrap; text-align: center;">
-                  <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem;" [title]="row.tramo.description">
-                    <span class="pwa-badge" style="font-weight: 800; font-size: var(--pwa-text-2xs);">
+                <!-- Points & Tramo Behavior -->
+                <td class="py-3 px-3 whitespace-nowrap text-center">
+                  <div class="flex flex-col items-center justify-center gap-0.5" [title]="row.tramo.description">
+                    <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-extrabold text-xs shadow-xs border border-slate-200 dark:border-slate-700">
                       {{ row.points }} pts
                     </span>
                     <span
-                      class="pwa-badge"
+                      class="text-[9px] font-semibold px-1.5 py-0.2 rounded flex items-center gap-1 cursor-help"
                       [ngClass]="getTramoBadgeClasses(row.drawdownPercentage)"
-                      style="font-size: 10px; padding: 0.125rem 0.375rem;"
                     >
                       <span>{{ row.tramo.icon }}</span>
                       <span>{{ row.tramo.badge }}</span>
@@ -146,67 +154,69 @@ import { Asset } from '../../../../core/models/asset.model';
                   </div>
                 </td>
 
-                <td style="white-space: nowrap; text-align: center; font-size: var(--pwa-text-2xs); color: var(--pwa-text-secondary);">
-                  <span style="font-weight: 600; color: var(--pwa-text-primary);">{{ row.asset.baseWeightPercentage }}%</span>
+                <!-- Weight & Multiplier -->
+                <td class="py-3 px-3 whitespace-nowrap text-center text-[11px] text-slate-600 dark:text-slate-400">
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">{{ row.asset.baseWeightPercentage }}%</span>
                   @if (row.asset.category === 'equity') {
-                    <span style="color: var(--pwa-text-muted);"> (×{{ row.asset.dynamicMultiplier }})</span>
+                    <span class="text-slate-400 text-[10px]"> (×{{ row.asset.dynamicMultiplier }})</span>
                   }
                 </td>
 
-                <td style="white-space: nowrap; text-align: right; font-family: var(--pwa-font-mono); font-weight: 500;">
+                <!-- Extra Dinámico (€) -->
+                <td class="py-3 px-3 whitespace-nowrap text-right font-mono font-medium">
                   @if (row.asset.category === 'equity') {
-                    <span [style.color]="row.extraAllocation > 0 ? 'var(--pwa-success-text)' : 'inherit'">
+                    <span [class.text-emerald-600]="row.extraAllocation > 0" [class.dark:text-emerald-400]="row.extraAllocation > 0">
                       +{{ row.extraAllocation | currency: 'EUR' : 'symbol' : '1.2-2' }}
                     </span>
                   } @else {
-                    <span style="color: var(--pwa-text-muted);">—</span>
+                    <span class="text-slate-400 dark:text-slate-600">—</span>
                   }
                 </td>
 
-                <td style="white-space: nowrap; text-align: right;">
-                  <span class="pwa-badge pwa-badge--info" style="font-size: var(--pwa-text-sm); font-weight: 800; padding: 0.375rem 0.625rem;">
+                <!-- Aportación Recomendada (€) -->
+                <td class="py-3 px-4 whitespace-nowrap text-right">
+                  <div class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-sky-100 dark:bg-sky-950/70 border border-sky-300 dark:border-sky-800 text-sky-900 dark:text-sky-200 font-extrabold text-sm shadow-sm">
                     {{ row.finalAllocation | currency: 'EUR' : 'symbol' : '1.2-2' }}
-                  </span>
+                  </div>
                 </td>
 
-                <td style="white-space: nowrap; text-align: right; font-weight: 600; color: var(--pwa-text-primary);">
+                <!-- % Total Cartera -->
+                <td class="py-3 px-3 whitespace-nowrap text-right font-semibold text-slate-700 dark:text-slate-300">
                   {{ row.portfolioWeightPercentage | number: '1.1-1' }}%
                 </td>
 
-                <td style="white-space: nowrap; text-align: center;">
-                  <div style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                <!-- Actions -->
+                <td class="py-3 px-3 whitespace-nowrap text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <!-- Refresh single -->
                     <button
-                      type="button"
                       (click)="refreshAsset(row.asset)"
-                      class="pwa-btn pwa-btn--ghost pwa-btn--icon"
-                      style="min-height: 30px; min-width: 30px; padding: 0.25rem;"
+                      class="p-1 rounded-md text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       title="Refrescar cotización individual"
                     >
-                      <svg style="width: 0.875rem; height: 0.875rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
                     </button>
 
+                    <!-- Edit asset -->
                     <button
-                      type="button"
                       (click)="editAsset.emit(row.asset)"
-                      class="pwa-btn pwa-btn--ghost pwa-btn--icon"
-                      style="min-height: 30px; min-width: 30px; padding: 0.25rem;"
+                      class="p-1 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       title="Editar datos del activo"
                     >
-                      <svg style="width: 0.875rem; height: 0.875rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                       </svg>
                     </button>
 
+                    <!-- Delete asset -->
                     <button
-                      type="button"
                       (click)="deleteAsset(row.asset)"
-                      class="pwa-btn pwa-btn--ghost pwa-btn--icon"
-                      style="min-height: 30px; min-width: 30px; padding: 0.25rem; color: var(--pwa-danger);"
+                      class="p-1 rounded-md text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       title="Eliminar activo"
                     >
-                      <svg style="width: 0.875rem; height: 0.875rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
@@ -215,11 +225,11 @@ import { Asset } from '../../../../core/models/asset.model';
               </tr>
             } @empty {
               <tr>
-                <td colspan="11" style="padding: 3rem 1rem; text-align: center; color: var(--pwa-text-muted);">
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <span style="font-size: 2rem;">📭</span>
-                    <span style="font-size: var(--pwa-text-sm); font-weight: 600; color: var(--pwa-text-primary);">No hay activos registrados en tu cartera</span>
-                    <span style="font-size: var(--pwa-text-xs);">Haz clic en "Nuevo Activo" para añadir tus fondos o ETFs por ISIN.</span>
+                <td colspan="11" class="py-12 text-center text-slate-400 dark:text-slate-500">
+                  <div class="flex flex-col items-center justify-center gap-2">
+                    <span class="text-3xl">📭</span>
+                    <span class="text-sm font-semibold">No hay activos registrados en tu cartera</span>
+                    <span class="text-xs">Haz clic en "Nuevo Activo" para añadir tus fondos o ETFs por ISIN.</span>
                   </div>
                 </td>
               </tr>
@@ -269,19 +279,65 @@ export class AllocationTableComponent {
     }
   }
 
-  getTramoBadgeClasses(drawdown: number): string {
-    if (drawdown <= 2.0) return 'pwa-badge--info';
-    if (drawdown <= 5.0) return '';
-    if (drawdown <= 10.0) return 'pwa-badge--success';
-    if (drawdown <= 20.0) return 'pwa-badge--warning';
-    return 'pwa-badge--danger';
+  getTramoBadgeClasses(drawdown: number): Record<string, boolean> {
+    if (drawdown <= 2.0) {
+      return {
+        'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 border border-cyan-300/40': true,
+      };
+    }
+    if (drawdown <= 5.0) {
+      return {
+        'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300/40': true,
+      };
+    }
+    if (drawdown <= 10.0) {
+      return {
+        'bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 border border-teal-300/40': true,
+      };
+    }
+    if (drawdown <= 15.0) {
+      return {
+        'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300/40': true,
+      };
+    }
+    if (drawdown <= 20.0) {
+      return {
+        'bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border border-orange-300/40': true,
+      };
+    }
+    return {
+      'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border border-purple-300/40': true,
+    };
   }
 
-  getDrawdownClasses(drawdown: number): string {
-    if (drawdown <= 2.0) return 'pwa-badge--info';
-    if (drawdown <= 5.0) return '';
-    if (drawdown <= 10.0) return 'pwa-badge--success';
-    if (drawdown <= 20.0) return 'pwa-badge--warning';
-    return 'pwa-badge--danger';
+  getDrawdownClasses(drawdown: number): Record<string, boolean> {
+    if (drawdown <= 2.0) {
+      return {
+        'bg-cyan-100 dark:bg-cyan-950/70 text-cyan-800 dark:text-cyan-300 border border-cyan-300/40': true,
+      };
+    }
+    if (drawdown <= 5.0) {
+      return {
+        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/40': true,
+      };
+    }
+    if (drawdown <= 10.0) {
+      return {
+        'bg-teal-100 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 border border-teal-300/40': true,
+      };
+    }
+    if (drawdown <= 20.0) {
+      return {
+        'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300/40': true,
+      };
+    }
+    if (drawdown <= 30.0) {
+      return {
+        'bg-orange-100 dark:bg-orange-950/70 text-orange-800 dark:text-orange-300 border border-orange-300/40': true,
+      };
+    }
+    return {
+      'bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border border-rose-300/40': true,
+    };
   }
 }

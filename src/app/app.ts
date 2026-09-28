@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PwaToastContainerComponent } from 'pwa-ui-core/components';
 import { HeaderComponent } from './shared/components/header/header.component';
+import { PwaToastContainerComponent } from 'pwa-ui-core/components';
 import { KpiCardsComponent } from './features/dashboard/components/kpi-cards/kpi-cards.component';
 import { AllocationTableComponent } from './features/dashboard/components/allocation-table/allocation-table.component';
 import { AllocationChartComponent } from './features/dashboard/components/allocation-chart/allocation-chart.component';
