@@ -12,16 +12,16 @@ interface ChartSlice {
 }
 
 const COLOR_PALETTE = [
-  '#0284c7', // sky-600
-  '#10b981', // emerald-500
-  '#6366f1', // indigo-500
-  '#f59e0b', // amber-500
-  '#ec4899', // pink-500
-  '#8b5cf6', // purple-500
-  '#14b8a6', // teal-500
-  '#f97316', // orange-500
-  '#06b6d4', // cyan-500
-  '#84cc16', // lime-500
+  '#0284c7',
+  '#10b981',
+  '#6366f1',
+  '#f59e0b',
+  '#ec4899',
+  '#8b5cf6',
+  '#14b8a6',
+  '#f97316',
+  '#06b6d4',
+  '#84cc16',
 ];
 
 @Component({
@@ -31,41 +31,37 @@ const COLOR_PALETTE = [
   template: `
     @let s = dcaEngine.summary();
 
-    <div class="rounded-2xl p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-full">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+    <div class="pwa-card" style="display: flex; flex-direction: column; height: 100%;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--pwa-border);">
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <span>Distribución de Aportación Periódica</span>
+          <h3 style="font-size: var(--pwa-text-sm); font-weight: 700; color: var(--pwa-text-primary); margin: 0;">
+            Distribución de Aportación Periódica
           </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
+          <p style="font-size: var(--pwa-text-xs); color: var(--pwa-text-secondary); margin: 0.25rem 0 0 0;">
             Reparto táctico final del período actual
           </p>
         </div>
-        <span class="text-xs font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+        <span class="pwa-badge pwa-badge--info">
           {{ s.allocations.length }} activos
         </span>
       </div>
 
       @if (s.allocations.length === 0) {
-        <div class="flex-1 flex flex-col items-center justify-center py-10 text-slate-400 text-sm">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2.5rem 0; color: var(--pwa-text-muted); font-size: var(--pwa-text-sm);">
           <span>No hay activos registrados</span>
         </div>
       } @else {
-        <div class="flex-1 flex flex-col md:flex-row items-center justify-center gap-6 pt-4">
-          <!-- Donut SVG Container -->
-          <div class="relative w-48 h-48 shrink-0 flex items-center justify-center">
-            <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
-              <!-- Background Circle -->
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; padding-top: 1rem;">
+          <div style="position: relative; width: 12rem; height: 12rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+            <svg style="width: 100%; height: 100%; transform: rotate(-90deg);" viewBox="0 0 100 100">
               <circle
                 cx="50"
                 cy="50"
                 r="38"
                 fill="none"
                 stroke-width="14"
-                class="stroke-slate-100 dark:stroke-slate-800"
+                style="stroke: var(--pwa-border-subtle);"
               />
-
-              <!-- Slice Arcs -->
               @for (slice of slices(); track slice.allocation.asset.id; let idx = $index) {
                 <circle
                   cx="50"
@@ -78,55 +74,52 @@ const COLOR_PALETTE = [
                   [attr.stroke-dashoffset]="slice.strokeDashoffset"
                   (mouseenter)="hoveredAssetId.set(slice.allocation.asset.id)"
                   (mouseleave)="hoveredAssetId.set(null)"
-                  class="transition-all duration-300 cursor-pointer hover:opacity-90"
+                  style="transition: all 0.3s ease; cursor: pointer;"
                   [class.stroke-width-16]="hoveredAssetId() === slice.allocation.asset.id"
                 />
               }
             </svg>
 
-            <!-- Center Summary Text -->
-            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
-              <span class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Total</span>
-              <span class="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; text-align: center; padding: 0.5rem;">
+              <span style="font-size: 10px; text-transform: uppercase; font-weight: 600; color: var(--pwa-text-muted); letter-spacing: 0.05em;">Total</span>
+              <span style="font-size: var(--pwa-text-base); font-weight: 900; color: var(--pwa-text-primary); line-height: 1.2;">
                 {{ s.allocatedBudget | currency: 'EUR' : 'symbol' : '1.0-0' }}
               </span>
-              <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">100%</span>
+              <span style="font-size: 10px; color: var(--pwa-success); font-weight: 700;">100%</span>
             </div>
           </div>
 
-          <!-- Legend -->
-          <div class="flex-1 w-full space-y-2 max-h-56 overflow-y-auto pr-1">
+          <div style="width: 100%; display: flex; flex-direction: column; gap: 0.5rem; max-height: 14rem; overflow-y: auto;">
             @for (slice of slices(); track slice.allocation.asset.id) {
               <div
                 (mouseenter)="hoveredAssetId.set(slice.allocation.asset.id)"
                 (mouseleave)="hoveredAssetId.set(null)"
-                class="flex items-center justify-between p-2 rounded-xl transition-colors cursor-pointer text-xs"
-                [ngClass]="
-                  hoveredAssetId() === slice.allocation.asset.id
-                    ? 'bg-slate-100 dark:bg-slate-800/80 shadow-sm'
-                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                "
+                class="pwa-card pwa-card--interactive"
+                [style.padding]="'0.5rem 0.75rem'"
+                [style.background-color]="hoveredAssetId() === slice.allocation.asset.id ? 'var(--pwa-bg-card-hover)' : 'transparent'"
+                [style.border-color]="hoveredAssetId() === slice.allocation.asset.id ? 'var(--pwa-border-strong)' : 'var(--pwa-border-subtle)'"
+                style="display: flex; align-items: center; justify-content: space-between; font-size: var(--pwa-text-xs);"
               >
-                <div class="flex items-center gap-2.5 min-w-0">
+                <div style="display: flex; align-items: center; gap: 0.625rem; min-width: 0;">
                   <span
-                    class="w-3 h-3 rounded-full shrink-0 shadow-sm"
+                    style="width: 0.75rem; height: 0.75rem; border-radius: 50%; flex-shrink: 0;"
                     [style.background-color]="slice.color"
                   ></span>
-                  <div class="truncate">
-                    <div class="font-bold text-slate-800 dark:text-slate-200 truncate">
+                  <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <div style="font-weight: 700; color: var(--pwa-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                       {{ slice.allocation.asset.ticker }}
                     </div>
-                    <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    <div style="font-size: 10px; color: var(--pwa-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                       {{ slice.allocation.asset.name }}
                     </div>
                   </div>
                 </div>
 
-                <div class="text-right shrink-0 pl-2">
-                  <div class="font-bold text-slate-900 dark:text-white">
+                <div style="text-align: right; flex-shrink: 0; padding-left: 0.5rem;">
+                  <div style="font-weight: 700; color: var(--pwa-text-primary);">
                     {{ slice.allocation.finalAllocation | currency: 'EUR' : 'symbol' : '1.2-2' }}
                   </div>
-                  <div class="text-[10px] font-semibold text-sky-600 dark:text-sky-400">
+                  <div style="font-size: 10px; font-weight: 600; color: var(--pwa-brand-text);">
                     {{ slice.percentage }}%
                   </div>
                 </div>
@@ -158,7 +151,7 @@ export class AllocationChartComponent {
       return [];
     }
 
-    const circumference = 2 * Math.PI * 38; // r = 38 => ~238.76
+    const circumference = 2 * Math.PI * 38;
     let accumulatedLength = 0;
 
     return allocations.map((allocation, index) => {
