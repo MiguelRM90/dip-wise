@@ -34,6 +34,9 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
+      - name: Checkout pwa-ui-core library
+        run: git clone --depth 1 https://github.com/MiguelRM90/pwa-ui-core.git ../pwa-ui-core
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
