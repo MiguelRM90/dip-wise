@@ -1,0 +1,25 @@
+{
+  "/api/yahoo/search": {
+    "target": "https://query2.finance.yahoo.com",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/yahoo/search": "/v1/finance/search"
+    },
+    "headers": {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+  },
+  "/api/yahoo/chart": {
+    "target": "https://query1.finance.yahoo.com",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/yahoo/chart": "/v8/finance/chart"
+    },
+    "headers": {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+  }
+}
+

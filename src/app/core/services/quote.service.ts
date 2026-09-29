@@ -1,15 +1,15 @@
-import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom, timeout } from 'rxjs';
-import { StorageService } from './storage.service';
 import { Asset } from '../models/asset.model';
 import {
   QuoteFetchResult,
+  ResolvedSymbolResult,
   YahooChartResponse,
   YahooSearchQuote,
   YahooSearchResponse,
-  ResolvedSymbolResult,
 } from '../models/quote.model';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -118,9 +118,8 @@ export class QuoteService {
     if (!cleanQuery) return [];
 
     const settings = this.storage.settings();
-    const proxyBase = settings.apiSettings.corsProxyUrl || 'https://api.allorigins.win/raw?url=';
-    const targetUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(cleanQuery)}&quotesCount=6&newsCount=0`;
-    const requestUrl = `${proxyBase}${encodeURIComponent(targetUrl)}`;
+    const proxyBase = settings.apiSettings.corsProxyUrl;
+    const requestUrl = this.getYahooSearchUrl(cleanQuery, proxyBase);
 
     try {
       const response = await firstValueFrom(
@@ -219,9 +218,7 @@ export class QuoteService {
     isin: string,
     corsProxyUrl: string,
   ): Promise<QuoteFetchResult> {
-    const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1y`;
-    const proxyBase = corsProxyUrl || 'https://api.allorigins.win/raw?url=';
-    const requestUrl = `${proxyBase}${encodeURIComponent(targetUrl)}`;
+    const requestUrl = this.getYahooChartUrl(ticker, corsProxyUrl);
 
     const response = await firstValueFrom(
       this.http.get<YahooChartResponse>(requestUrl).pipe(timeout(10000)),
@@ -391,5 +388,33 @@ export class QuoteService {
       success: false,
       error: 'Invalid JSON response from custom proxy',
     };
+  }
+
+  private getYahooSearchUrl(cleanQuery: string, proxyBase?: string): string {
+    const isLocalhost =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+    if (isLocalhost && (!proxyBase || proxyBase.includes('allorigins.win'))) {
+      return `/api/yahoo/search?q=${encodeURIComponent(cleanQuery)}&quotesCount=6&newsCount=0`;
+    }
+
+    const targetUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(cleanQuery)}&quotesCount=6&newsCount=0`;
+    const base = proxyBase || 'https://api.allorigins.win/raw?url=';
+    return `${base}${encodeURIComponent(targetUrl)}`;
+  }
+
+  private getYahooChartUrl(ticker: string, proxyBase?: string): string {
+    const isLocalhost =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+    if (isLocalhost && (!proxyBase || proxyBase.includes('allorigins.win'))) {
+      return `/api/yahoo/chart/${encodeURIComponent(ticker)}?interval=1d&range=1y`;
+    }
+
+    const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1y`;
+    const base = proxyBase || 'https://api.allorigins.win/raw?url=';
+    return `${base}${encodeURIComponent(targetUrl)}`;
   }
 }

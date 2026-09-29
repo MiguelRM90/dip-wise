@@ -40,8 +40,14 @@ export class AssetModalComponent {
 
   constructor() {
     effect(() => {
+      const open = this.isOpen();
       const asset = this.editingAsset();
       this.alternativeQuotes.set([]);
+
+      if (!open) {
+        return;
+      }
+
       if (asset) {
         this.formIsin = asset.isin;
         this.formTicker = asset.ticker;
@@ -52,64 +58,88 @@ export class AssetModalComponent {
         this.formCurrentPrice = asset.currentPrice;
         this.formAthPrice = asset.athPrice;
       } else {
-        this.formIsin = '';
-        this.formTicker = '';
-        this.formName = '';
-        this.formCategory = 'equity';
-        this.formBaseWeight = 25;
-        this.formMultiplier = 5;
-        this.formCurrentPrice = 0;
-        this.formAthPrice = 0;
+        this.resetForm();
       }
     });
   }
 
-  async autoFetchQuote(): Promise<void> {
-    const isin = this.formIsin.trim().toUpperCase();
-    let ticker = this.formTicker.trim().toUpperCase();
+  resetForm(): void {
+    this.formIsin = '';
+    this.formTicker = '';
+    this.formName = '';
+    this.formCategory = 'equity';
+    this.formBaseWeight = 25;
+    this.formMultiplier = 5;
+    this.formCurrentPrice = 0;
+    this.formAthPrice = 0;
+    this.alternativeQuotes.set([]);
+  }
 
-    if (!isin && !ticker) {
-      this.toast.warning('Datos requeridos', 'Introduce el código ISIN o el Ticker para buscar.');
+  handleClose(): void {
+    this.resetForm();
+    this.close.emit();
+  }
+
+  async fetchByIsin(): Promise<void> {
+    const isin = this.formIsin.trim().toUpperCase();
+    if (!isin) {
+      this.toast.warning('Código ISIN requerido', 'Introduce un código ISIN para buscar.');
       return;
     }
 
     this.isFetchingQuote.set(true);
 
     try {
-      // 1. If ticker is empty, or user entered an ISIN in the ticker field, resolve via ISIN search
-      const isTickerActuallyIsin = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i.test(ticker);
-      const searchTarget = !ticker || isTickerActuallyIsin ? isin || ticker : null;
-
-      if (searchTarget) {
-        if (!this.formIsin && isTickerActuallyIsin) {
-          this.formIsin = ticker;
-        }
-
-        const resolved = await this.quoteService.resolveTickerFromIsin(searchTarget);
-        if (!resolved?.symbol) {
-          this.toast.error(
-            'Ticker no encontrado',
-            `No se encontró ningún símbolo para ${searchTarget}. Introduce el Ticker manualmente.`,
-          );
-          return;
-        }
-
-        ticker = resolved.symbol.toUpperCase();
-        this.formTicker = ticker;
-        this.alternativeQuotes.set(resolved.quotes || []);
-
-        if (resolved.name && !this.formName.trim()) {
-          this.formName = resolved.name;
-        }
+      const resolved = await this.quoteService.resolveTickerFromIsin(isin);
+      if (!resolved?.symbol) {
+        this.toast.error(
+          'Ticker no encontrado',
+          `No se encontró ningún símbolo para ${isin}. Introduce el Ticker manualmente.`,
+        );
+        return;
       }
 
-      // 2. Fetch prices (current and 52w ATH)
+      this.formTicker = resolved.symbol.toUpperCase();
+      this.alternativeQuotes.set(resolved.quotes || []);
+
+      if (resolved.name && !this.formName.trim()) {
+        this.formName = resolved.name;
+      }
+
+      await this.fetchQuoteOnly(this.formTicker);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al consultar mercado';
+      this.toast.error('Error de consulta', msg);
+    } finally {
+      this.isFetchingQuote.set(false);
+    }
+  }
+
+  async fetchByTicker(): Promise<void> {
+    const ticker = this.formTicker.trim().toUpperCase();
+    if (!ticker) {
+      this.toast.warning('Ticker requerido', 'Introduce un Ticker para consultar la cotización.');
+      return;
+    }
+
+    this.isFetchingQuote.set(true);
+    try {
       await this.fetchQuoteOnly(ticker);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al consultar mercado';
       this.toast.error('Error de consulta', msg);
     } finally {
       this.isFetchingQuote.set(false);
+    }
+  }
+
+  async autoFetchQuote(): Promise<void> {
+    if (this.formIsin.trim()) {
+      await this.fetchByIsin();
+    } else if (this.formTicker.trim()) {
+      await this.fetchByTicker();
+    } else {
+      this.toast.warning('Datos requeridos', 'Introduce el código ISIN o el Ticker para buscar.');
     }
   }
 
@@ -185,6 +215,7 @@ export class AssetModalComponent {
       `${assetToSave.ticker} (${assetToSave.isin}) guardado.`,
     );
 
+    this.resetForm();
     this.close.emit();
   }
 }
