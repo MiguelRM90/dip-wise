@@ -52,6 +52,11 @@ export interface PortfolioSummary {
   safeHavenBudget: number;
   safeHavenAllocated: number;
   allocations: AssetAllocation[];
+  equityWeightSum: number;
+  safeHavenWeightSum: number;
+  isEquityWeightValid: boolean;
+  isSafeHavenWeightValid: boolean;
+  weightWarnings: string[];
 }
 
 export const DEFAULT_PORTFOLIO_SETTINGS: PortfolioSettings = {
@@ -78,7 +83,6 @@ export const DEFAULT_SEED_ASSETS: Asset[] = [
     name: 'iShares Core MSCI World UCITS ETF',
     category: 'equity',
     baseWeightPercentage: 50,
-    dynamicMultiplier: 10,
     currentPrice: 94.2,
     athPrice: 102.5,
     status: 'idle',
@@ -91,7 +95,6 @@ export const DEFAULT_SEED_ASSETS: Asset[] = [
     name: 'iShares Core S&P 500 UCITS ETF',
     category: 'equity',
     baseWeightPercentage: 30,
-    dynamicMultiplier: 6,
     currentPrice: 548.6,
     athPrice: 575.0,
     status: 'idle',
@@ -104,7 +107,6 @@ export const DEFAULT_SEED_ASSETS: Asset[] = [
     name: 'iShares Core MSCI EM IMI UCITS ETF',
     category: 'equity',
     baseWeightPercentage: 20,
-    dynamicMultiplier: 4,
     currentPrice: 32.4,
     athPrice: 39.8,
     status: 'idle',
@@ -117,7 +119,6 @@ export const DEFAULT_SEED_ASSETS: Asset[] = [
     name: 'iShares Physical Gold ETC',
     category: 'safe_haven',
     baseWeightPercentage: 100,
-    dynamicMultiplier: 1,
     currentPrice: 48.9,
     athPrice: 51.5,
     status: 'idle',

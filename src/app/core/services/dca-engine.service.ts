@@ -156,6 +156,11 @@ export class DcaEngineService {
         safeHavenBudget: 0,
         safeHavenAllocated: 0,
         allocations: [],
+        equityWeightSum: 0,
+        safeHavenWeightSum: 0,
+        isEquityWeightValid: true,
+        isSafeHavenWeightValid: true,
+        weightWarnings: [],
       };
     }
 
@@ -169,22 +174,46 @@ export class DcaEngineService {
     const safeHavenAssets = assets.filter((a) => a.category === 'safe_haven');
 
     // Equities: Sum of base weights
-    const equityBaseWeightSum = equityAssets.reduce(
-      (acc, a) => acc + Math.max(0, a.baseWeightPercentage),
+    const rawEquityBaseWeightSum = equityAssets.reduce(
+      (acc, a) => acc + Math.max(0, a.baseWeightPercentage || 0),
       0,
     );
+    const equityWeightSum = Math.round(rawEquityBaseWeightSum * 100) / 100;
+
+    // Safe Haven: Sum of base weights
+    const rawSafeHavenBaseWeightSum = safeHavenAssets.reduce(
+      (acc, a) => acc + Math.max(0, a.baseWeightPercentage || 0),
+      0,
+    );
+    const safeHavenWeightSum = Math.round(rawSafeHavenBaseWeightSum * 100) / 100;
+
+    const isEquityWeightValid = equityAssets.length === 0 || Math.abs(equityWeightSum - 100) < 0.01;
+    const isSafeHavenWeightValid =
+      safeHavenAssets.length === 0 || Math.abs(safeHavenWeightSum - 100) < 0.01;
+
+    const weightWarnings: string[] = [];
+    if (!isEquityWeightValid) {
+      weightWarnings.push(
+        `Las ponderaciones de Renta Variable suman ${equityWeightSum}% (deben sumar 100%).`,
+      );
+    }
+    if (!isSafeHavenWeightValid) {
+      weightWarnings.push(
+        `Las ponderaciones de Oro / Refugio suman ${safeHavenWeightSum}% (deben sumar 100%).`,
+      );
+    }
 
     // Compute drawdowns, points, and dynamic weighted points for equities
     const equityIntermediate = equityAssets.map((asset) => {
       const drawdown = this.calculateDrawdown(asset.currentPrice, asset.athPrice);
       const points = this.calculatePoints(drawdown);
       const tramo = this.getTramoInfo(drawdown);
-      const multiplier = Math.max(0, asset.dynamicMultiplier || 1);
-      const weightedValue = points * multiplier;
+      const weight = Math.max(0, asset.baseWeightPercentage || 0);
+      const weightedValue = points * weight;
 
       const baseShare =
-        equityBaseWeightSum > 0
-          ? Math.max(0, asset.baseWeightPercentage) / equityBaseWeightSum
+        equityWeightSum > 0
+          ? Math.max(0, asset.baseWeightPercentage) / equityWeightSum
           : 1 / Math.max(1, equityAssets.length);
 
       const baseAllocation = fixedEquityPool * baseShare;
@@ -234,18 +263,12 @@ export class DcaEngineService {
       };
     });
 
-    // Safe Haven: Sum of base weights
-    const safeHavenBaseWeightSum = safeHavenAssets.reduce(
-      (acc, a) => acc + Math.max(0, a.baseWeightPercentage),
-      0,
-    );
-
     const safeHavenCalculated = safeHavenAssets.map((asset) => {
       const drawdown = this.calculateDrawdown(asset.currentPrice, asset.athPrice);
 
       const baseShare =
-        safeHavenBaseWeightSum > 0
-          ? Math.max(0, asset.baseWeightPercentage) / safeHavenBaseWeightSum
+        safeHavenWeightSum > 0
+          ? Math.max(0, asset.baseWeightPercentage) / safeHavenWeightSum
           : 1 / Math.max(1, safeHavenAssets.length);
 
       const baseAllocation = safeHavenBudget * baseShare;
@@ -366,6 +389,11 @@ export class DcaEngineService {
       safeHavenBudget: Math.round(safeHavenBudget * 100) / 100,
       safeHavenAllocated: Math.round(safeHavenAllocated * 100) / 100,
       allocations,
+      equityWeightSum,
+      safeHavenWeightSum,
+      isEquityWeightValid,
+      isSafeHavenWeightValid,
+      weightWarnings,
     };
   }
 }

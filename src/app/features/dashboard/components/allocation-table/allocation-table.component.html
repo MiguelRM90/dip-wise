@@ -41,6 +41,33 @@
     </div>
   </div>
 
+  <!-- Category Weight Warning Banner -->
+  @if (!s.isEquityWeightValid || !s.isSafeHavenWeightValid) {
+    <div
+      class="mx-4 sm:mx-5 mt-4 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-200 flex items-start gap-3 text-xs"
+    >
+      <span class="text-base shrink-0 leading-none">⚠️</span>
+      <div class="space-y-1">
+        <div class="font-bold">Aviso de ponderación de cartera:</div>
+        @if (!s.isEquityWeightValid) {
+          <div>
+            La suma de ponderaciones base en <strong>Renta Variable</strong> es del
+            <strong>{{ s.equityWeightSum }}%</strong> (debe sumar exactamente <strong>100%</strong>).
+          </div>
+        }
+        @if (!s.isSafeHavenWeightValid) {
+          <div>
+            La suma de ponderaciones base en <strong>Oro / Refugio</strong> es del
+            <strong>{{ s.safeHavenWeightSum }}%</strong> (debe sumar exactamente <strong>100%</strong>).
+          </div>
+        }
+        <div class="text-[11px] opacity-80">
+          El algoritmo normalizará las proporciones, pero se recomienda ajustar las ponderaciones base de cada categoría para que sumen el 100%.
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- Main Table / Responsive View -->
   <div class="overflow-x-auto">
     <table class="w-full text-left border-collapse text-xs">
@@ -54,7 +81,7 @@
           <th scope="col" class="py-3 px-3">Precio Actual (€)</th>
           <th scope="col" class="py-3 px-3 text-center">Caída %</th>
           <th scope="col" class="py-3 px-3 text-center">Puntos</th>
-          <th scope="col" class="py-3 px-3 text-center">Pond. / Mult.</th>
+          <th scope="col" class="py-3 px-3 text-center">Pond. Base (%)</th>
           <th scope="col" class="py-3 px-3 text-right">Extra (€)</th>
           <th scope="col" class="py-3 px-4 text-right">Aportación (€)</th>
           <th scope="col" class="py-3 px-3 text-right">% Cartera</th>
@@ -176,18 +203,13 @@
               </div>
             </td>
 
-            <!-- Weight & Multiplier -->
+            <!-- Base Weight -->
             <td
               class="py-3 px-3 whitespace-nowrap text-center text-[11px] text-slate-600 dark:text-slate-400"
             >
               <span class="font-semibold text-slate-800 dark:text-slate-200"
                 >{{ row.asset.baseWeightPercentage }}%</span
               >
-              @if (row.asset.category === 'equity') {
-                <span class="text-slate-400 text-[10px]">
-                  (×{{ row.asset.dynamicMultiplier }})</span
-                >
-              }
             </td>
 
             <!-- Extra Dinámico (€) -->
@@ -287,6 +309,69 @@
           </tr>
         }
       </tbody>
+      @if (s.allocations.length > 0) {
+        <tfoot
+          class="border-t-2 border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 font-semibold text-xs"
+        >
+          <tr>
+            <td colspan="6" class="py-3 px-4">
+              <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold">
+                  Suma Ponderaciones:
+                </span>
+                <!-- Equities Weight Badge -->
+                <span
+                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
+                  [ngClass]="
+                    s.isEquityWeightValid
+                      ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40'
+                      : 'bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-300/40'
+                  "
+                  [title]="
+                    s.isEquityWeightValid
+                      ? 'Ponderación de RV completa'
+                      : 'La ponderación de RV debe sumar exactamente 100%'
+                  "
+                >
+                  <span>RV: {{ s.equityWeightSum }}%</span>
+                  <span>{{ s.isEquityWeightValid ? '✓' : '⚠️' }}</span>
+                </span>
+
+                <!-- Safe Haven Weight Badge -->
+                @if (s.safeHavenBudget > 0 || s.safeHavenWeightSum > 0) {
+                  <span
+                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
+                    [ngClass]="
+                      s.isSafeHavenWeightValid
+                        ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40'
+                        : 'bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-300/40'
+                    "
+                    [title]="
+                      s.isSafeHavenWeightValid
+                        ? 'Ponderación de Oro completa'
+                        : 'La ponderación de Oro debe sumar exactamente 100%'
+                    "
+                  >
+                    <span>Oro: {{ s.safeHavenWeightSum }}%</span>
+                    <span>{{ s.isSafeHavenWeightValid ? '✓' : '⚠️' }}</span>
+                  </span>
+                }
+              </div>
+            </td>
+            <td class="py-3 px-3 text-center text-slate-400 dark:text-slate-500">—</td>
+            <td class="py-3 px-3 text-right text-slate-400 dark:text-slate-500">—</td>
+            <td class="py-3 px-4 text-right">
+              <span class="font-extrabold text-sm text-sky-900 dark:text-sky-200">
+                {{ s.allocatedBudget | currency: 'EUR' : 'symbol' : '1.2-2' }}
+              </span>
+            </td>
+            <td class="py-3 px-3 text-right font-bold text-slate-900 dark:text-white">
+              100%
+            </td>
+            <td></td>
+          </tr>
+        </tfoot>
+      }
     </table>
   </div>
 </div>

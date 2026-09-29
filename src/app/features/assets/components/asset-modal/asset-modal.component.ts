@@ -29,12 +29,13 @@ export class AssetModalComponent {
   readonly isFetchingQuote = signal<boolean>(false);
   readonly alternativeQuotes = signal<YahooSearchQuote[]>([]);
 
+  protected readonly Math = Math;
+
   formIsin = '';
   formTicker = '';
   formName = '';
   formCategory: AssetCategory = 'equity';
   formBaseWeight = 50;
-  formMultiplier = 10;
   formCurrentPrice = 100;
   formAthPrice = 100;
 
@@ -54,7 +55,6 @@ export class AssetModalComponent {
         this.formName = asset.name;
         this.formCategory = asset.category;
         this.formBaseWeight = asset.baseWeightPercentage;
-        this.formMultiplier = asset.dynamicMultiplier;
         this.formCurrentPrice = asset.currentPrice;
         this.formAthPrice = asset.athPrice;
       } else {
@@ -63,13 +63,24 @@ export class AssetModalComponent {
     });
   }
 
+  getCategoryProjectedWeight(): number {
+    const currentAssets = this.storage.assets();
+    const editingId = this.editingAsset()?.id;
+    const currentInputWeight = Number(this.formBaseWeight) || 0;
+
+    const otherSum = currentAssets
+      .filter((a) => a.category === this.formCategory && a.id !== editingId)
+      .reduce((acc, a) => acc + (Number(a.baseWeightPercentage) || 0), 0);
+
+    return Math.round((otherSum + currentInputWeight) * 100) / 100;
+  }
+
   resetForm(): void {
     this.formIsin = '';
     this.formTicker = '';
     this.formName = '';
     this.formCategory = 'equity';
     this.formBaseWeight = 25;
-    this.formMultiplier = 5;
     this.formCurrentPrice = 0;
     this.formAthPrice = 0;
     this.alternativeQuotes.set([]);
@@ -164,7 +175,6 @@ export class AssetModalComponent {
       name: this.formName,
       category: this.formCategory,
       baseWeightPercentage: this.formBaseWeight,
-      dynamicMultiplier: this.formMultiplier,
       currentPrice: this.formCurrentPrice,
       athPrice: this.formAthPrice,
     };
@@ -192,6 +202,9 @@ export class AssetModalComponent {
       return;
     }
 
+    const projectedWeight = this.getCategoryProjectedWeight();
+    const isWeightValid = Math.abs(projectedWeight - 100) < 0.01;
+
     const assetId =
       this.editingAsset()?.id || `asset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
@@ -202,7 +215,6 @@ export class AssetModalComponent {
       name: this.formName.trim(),
       category: this.formCategory,
       baseWeightPercentage: Number(this.formBaseWeight) || 0,
-      dynamicMultiplier: Number(this.formMultiplier) || 1,
       currentPrice: Number(this.formCurrentPrice) || 0,
       athPrice: Number(this.formAthPrice) || Number(this.formCurrentPrice) || 0,
       status: 'idle',
@@ -210,6 +222,15 @@ export class AssetModalComponent {
     };
 
     this.storage.saveAsset(assetToSave);
+
+    if (!isWeightValid) {
+      const categoryLabel = this.formCategory === 'equity' ? 'Renta Variable' : 'Oro / Refugio';
+      this.toast.warning(
+        'Ponderación no suma 100%',
+        `La suma en ${categoryLabel} es del ${projectedWeight}% (debe sumar 100%).`,
+      );
+    }
+
     this.toast.success(
       this.editingAsset() ? 'Activo modificado' : 'Activo añadido',
       `${assetToSave.ticker} (${assetToSave.isin}) guardado.`,

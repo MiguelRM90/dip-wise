@@ -9,7 +9,7 @@ export interface Asset {
   name: string;
   category: AssetCategory;
   baseWeightPercentage: number;
-  dynamicMultiplier: number;
+  dynamicMultiplier?: number;
   currentPrice: number;
   athPrice: number;
   lastUpdated?: string;
@@ -23,7 +23,6 @@ export interface AssetFormData {
   name: string;
   category: AssetCategory;
   baseWeightPercentage: number;
-  dynamicMultiplier: number;
   currentPrice: number;
   athPrice: number;
 }

@@ -117,7 +117,6 @@ describe('DcaEngineService', () => {
         name: 'Equity 1 (At ATH)',
         category: 'equity',
         baseWeightPercentage: 50,
-        dynamicMultiplier: 10,
         currentPrice: 100,
         athPrice: 100,
       },
@@ -128,7 +127,6 @@ describe('DcaEngineService', () => {
         name: 'Equity 2 (15% drop)',
         category: 'equity',
         baseWeightPercentage: 30,
-        dynamicMultiplier: 6,
         currentPrice: 85,
         athPrice: 100,
       },
@@ -139,7 +137,6 @@ describe('DcaEngineService', () => {
         name: 'Equity 3 (3% drop)',
         category: 'equity',
         baseWeightPercentage: 20,
-        dynamicMultiplier: 4,
         currentPrice: 97,
         athPrice: 100,
       },
@@ -150,7 +147,6 @@ describe('DcaEngineService', () => {
         name: 'Physical Gold',
         category: 'safe_haven',
         baseWeightPercentage: 100,
-        dynamicMultiplier: 1,
         currentPrice: 50,
         athPrice: 50,
       },
@@ -172,6 +168,46 @@ describe('DcaEngineService', () => {
       expect(eq1Alloc).toBeDefined();
       expect(eq1Alloc?.points).toBe(16);
       expect(eq1Alloc?.extraAllocation).toBeGreaterThan(0);
+    });
+
+    it('should calculate valid 100% weight sums when categories are balanced', () => {
+      const summary = service.calculateAllocations(mockAssets, mockSettings);
+      expect(summary.equityWeightSum).toBe(100);
+      expect(summary.safeHavenWeightSum).toBe(100);
+      expect(summary.isEquityWeightValid).toBe(true);
+      expect(summary.isSafeHavenWeightValid).toBe(true);
+      expect(summary.weightWarnings.length).toBe(0);
+    });
+
+    it('should emit warnings when category base weights do not sum to 100%', () => {
+      const imbalancedAssets: Asset[] = [
+        {
+          id: '1',
+          isin: 'LU1',
+          ticker: 'EQ1',
+          name: 'Equity 1',
+          category: 'equity',
+          baseWeightPercentage: 50,
+          currentPrice: 100,
+          athPrice: 100,
+        },
+        {
+          id: '2',
+          isin: 'LU2',
+          ticker: 'EQ2',
+          name: 'Equity 2',
+          category: 'equity',
+          baseWeightPercentage: 30, // Sum = 80%
+          currentPrice: 85,
+          athPrice: 100,
+        },
+      ];
+
+      const summary = service.calculateAllocations(imbalancedAssets, mockSettings);
+      expect(summary.equityWeightSum).toBe(80);
+      expect(summary.isEquityWeightValid).toBe(false);
+      expect(summary.weightWarnings.length).toBe(1);
+      expect(summary.weightWarnings[0]).toContain('Renta Variable suman 80%');
     });
 
     it('should work with arbitrary non-round budgets without losing cents or units', () => {
