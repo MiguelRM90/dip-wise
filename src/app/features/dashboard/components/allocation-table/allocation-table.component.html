@@ -77,8 +77,8 @@
         >
           <th scope="col" class="py-3 px-4">Activo / ISIN</th>
           <th scope="col" class="py-3 px-3">Categoría</th>
-          <th scope="col" class="py-3 px-3">ATH (€)</th>
-          <th scope="col" class="py-3 px-3">Precio Actual (€)</th>
+          <th scope="col" class="py-3 px-3 text-right whitespace-nowrap col-price">ATH (€)</th>
+          <th scope="col" class="py-3 px-3 text-right whitespace-nowrap col-price">Precio Actual (€)</th>
           <th scope="col" class="py-3 px-3 text-center">Caída %</th>
           <th scope="col" class="py-3 px-3 text-center">Puntos</th>
           <th scope="col" class="py-3 px-3 text-center">Pond. Base (%)</th>
@@ -144,30 +144,40 @@
             </td>
 
             <!-- ATH (Inline Editable) -->
-            <td class="py-3 px-3 whitespace-nowrap">
-              <div class="relative w-24">
+            <td class="py-3 px-3 whitespace-nowrap text-right col-price">
+              <div class="inline-price-field ml-auto">
                 <input
                   type="number"
                   step="0.01"
                   min="0"
                   [ngModel]="row.asset.athPrice"
                   (ngModelChange)="onPriceChange(row.asset, row.asset.currentPrice, $event)"
-                  class="w-full px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-right transition-colors"
+                  (focus)="selectInputText($event)"
+                  class="inline-price-input"
+                  placeholder="0.00"
+                  [title]="'Editar ATH de ' + row.asset.ticker"
+                  [attr.aria-label]="'Editar ATH de ' + row.asset.ticker"
                 />
+                <span class="inline-price-suffix" aria-hidden="true">€</span>
               </div>
             </td>
 
             <!-- Current Price (Inline Editable) -->
-            <td class="py-3 px-3 whitespace-nowrap">
-              <div class="relative w-24">
+            <td class="py-3 px-3 whitespace-nowrap text-right col-price">
+              <div class="inline-price-field ml-auto">
                 <input
                   type="number"
                   step="0.01"
                   min="0"
                   [ngModel]="row.asset.currentPrice"
                   (ngModelChange)="onPriceChange(row.asset, $event, row.asset.athPrice)"
-                  class="w-full px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-right transition-colors"
+                  (focus)="selectInputText($event)"
+                  class="inline-price-input"
+                  placeholder="0.00"
+                  [title]="'Editar precio actual de ' + row.asset.ticker"
+                  [attr.aria-label]="'Editar precio actual de ' + row.asset.ticker"
                 />
+                <span class="inline-price-suffix" aria-hidden="true">€</span>
               </div>
             </td>
 

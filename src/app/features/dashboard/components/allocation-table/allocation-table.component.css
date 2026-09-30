@@ -1,0 +1,90 @@
+/* ==========================================================================
+   Allocation Table Component Styles
+   Tactile, responsive inline price editing with dark mode support
+   ========================================================================== */
+
+.col-price {
+  width: 110px;
+  min-width: 110px;
+}
+
+.inline-price-field {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 104px;
+}
+
+.inline-price-input {
+  width: 100%;
+  height: 32px;
+  padding: 0.25rem 1.6rem 0.25rem 0.5rem;
+  font-family: var(--pwa-font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-feature-settings: var(--pwa-font-features, "cv02", "cv03", "cv04", "cv11", "tnum");
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  border-radius: var(--pwa-radius-sm, 8px);
+  border: 1px solid var(--pwa-border-strong, #cbd5e1);
+  background-color: var(--pwa-bg-input, #f1f5f9);
+  color: var(--pwa-text-primary, #0f172a);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.inline-price-input::-webkit-outer-spin-button,
+.inline-price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inline-price-input:hover {
+  border-color: var(--pwa-brand-500, #0284c7);
+}
+
+.inline-price-input:focus {
+  border-color: var(--pwa-brand-500, #0284c7);
+  background-color: var(--pwa-bg-surface, #ffffff);
+  box-shadow: 0 0 0 3px var(--pwa-brand-soft, rgba(2, 132, 199, 0.18));
+}
+
+.inline-price-suffix {
+  position: absolute;
+  right: 0.5rem;
+  font-family: var(--pwa-font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pwa-text-muted, #94a3b8);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Fail-safe dark mode styles */
+:host-context(.dark) .inline-price-input,
+:host-context([data-theme="dark"]) .inline-price-input {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: #334155;
+}
+
+:host-context(.dark) .inline-price-input:hover,
+:host-context([data-theme="dark"]) .inline-price-input:hover {
+  border-color: #38bdf8;
+  background-color: #243248;
+}
+
+:host-context(.dark) .inline-price-input:focus,
+:host-context([data-theme="dark"]) .inline-price-input:focus {
+  background-color: #0f172a;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22);
+}
+
+:host-context(.dark) .inline-price-suffix,
+:host-context([data-theme="dark"]) .inline-price-suffix {
+  color: #64748b;
+}

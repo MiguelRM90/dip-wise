@@ -9,6 +9,7 @@ import { Asset, DcaEngineService, QuoteService, StorageService } from '../../../
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './allocation-table.component.html',
+  styleUrl: './allocation-table.component.css',
 })
 export class AllocationTableComponent {
   readonly dcaEngine = inject(DcaEngineService);
@@ -20,6 +21,13 @@ export class AllocationTableComponent {
   readonly editAsset = output<Asset>();
 
   protected readonly Math = Math;
+
+  selectInputText(event: FocusEvent): void {
+    const target = event.target;
+    if (target instanceof HTMLInputElement) {
+      target.select();
+    }
+  }
 
   onPriceChange(asset: Asset, currentPrice: number, athPrice: number): void {
     const validCurrent = isNaN(currentPrice) ? 0 : Number(currentPrice);

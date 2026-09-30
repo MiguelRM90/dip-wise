@@ -41,6 +41,17 @@ body {
   background: rgba(148, 163, 184, 0.6);
 }
 
+/* Remove default spinner arrows in number inputs for cleaner UI */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /* SVG icon constraint - Prevents unstyled oversized SVGs */
 svg {
   display: inline-block;
@@ -133,8 +144,14 @@ svg.w-full { width: 100%; }
 .h-12 { height: 3rem; }
 .w-16 { width: 4rem; }
 .h-16 { height: 4rem; }
+.w-20 { width: 5rem; }
+.w-24 { width: 6rem; }
+.w-28 { width: 7rem; }
+.w-32 { width: 8rem; }
 .w-48 { width: 12rem; }
 .h-48 { height: 12rem; }
+.ml-auto { margin-left: auto; }
+.mr-auto { margin-right: auto; }
 
 .overflow-hidden { overflow: hidden; }
 .overflow-x-auto { overflow-x: auto; }
@@ -377,6 +394,8 @@ svg.w-full { width: 100%; }
 
 .dark .dark\:bg-slate-800 { background-color: #1e293b; }
 .dark .dark\:bg-slate-800\/40 { background-color: rgba(30, 41, 59, 0.4); }
+.dark .dark\:bg-slate-800\/80 { background-color: rgba(30, 41, 59, 0.8); }
+.dark .dark\:bg-slate-800\/90 { background-color: rgba(30, 41, 59, 0.9); }
 .dark .dark\:bg-slate-900 { background-color: #0f172a; }
 .dark .dark\:bg-slate-900\/50 { background-color: rgba(15, 23, 42, 0.5); }
 .dark .dark\:bg-slate-900\/80 { background-color: rgba(15, 23, 42, 0.8); }
