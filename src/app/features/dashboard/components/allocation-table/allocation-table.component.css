@@ -88,3 +88,69 @@
 :host-context([data-theme="dark"]) .inline-price-suffix {
   color: #64748b;
 }
+
+/* ==========================================================================
+   Sticky First Column (Activo / ISIN) for Horizontal Scrolling
+   ========================================================================== */
+
+.sticky-col {
+  position: sticky;
+  left: 0;
+  width: 175px;
+  min-width: 175px;
+  max-width: 220px;
+  box-shadow: inset -1px 0 0 var(--pwa-border, #e2e8f0), 4px 0 10px -2px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 640px) {
+  .sticky-col {
+    width: 200px;
+    min-width: 200px;
+  }
+}
+
+.sticky-col-header {
+  z-index: 20;
+  background-color: var(--pwa-bg-subtle, #f8fafc);
+}
+
+.sticky-col-cell {
+  z-index: 10;
+  background-color: var(--pwa-bg-surface, #ffffff);
+  transition: background-color 0.15s ease;
+}
+
+.sticky-col-footer {
+  z-index: 15;
+  background-color: var(--pwa-bg-subtle, #f8fafc);
+}
+
+tr:hover .sticky-col-cell {
+  background-color: var(--pwa-bg-card-hover, #f8fafc) !important;
+}
+
+/* Dark mode sticky column styles */
+:host-context(.dark) .sticky-col,
+:host-context([data-theme="dark"]) .sticky-col {
+  box-shadow: inset -1px 0 0 #334155, 4px 0 12px -2px rgba(0, 0, 0, 0.45);
+}
+
+:host-context(.dark) .sticky-col-header,
+:host-context([data-theme="dark"]) .sticky-col-header {
+  background-color: #1e293b;
+}
+
+:host-context(.dark) .sticky-col-cell,
+:host-context([data-theme="dark"]) .sticky-col-cell {
+  background-color: #0f172a;
+}
+
+:host-context(.dark) tr:hover .sticky-col-cell,
+:host-context([data-theme="dark"]) tr:hover .sticky-col-cell {
+  background-color: #1e293b !important;
+}
+
+:host-context(.dark) .sticky-col-footer,
+:host-context([data-theme="dark"]) .sticky-col-footer {
+  background-color: #1e293b;
+}
