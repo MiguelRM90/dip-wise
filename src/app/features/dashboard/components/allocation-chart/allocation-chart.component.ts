@@ -44,15 +44,17 @@ export class AllocationChartComponent {
     }
 
     const circumference = 2 * Math.PI * 38; // r = 38 => ~238.76
+    const gap = allocations.length > 1 ? 1.5 : 0;
     let accumulatedLength = 0;
 
     return allocations.map((allocation, index) => {
       const percentage = (allocation.finalAllocation / total) * 100;
-      const sliceLength = (allocation.finalAllocation / total) * circumference;
+      const rawLength = (allocation.finalAllocation / total) * circumference;
+      const sliceLength = allocation.finalAllocation > 0 ? Math.max(0.2, rawLength - gap) : 0;
       const strokeDasharray = `${sliceLength} ${circumference - sliceLength}`;
       const strokeDashoffset = -accumulatedLength;
 
-      accumulatedLength += sliceLength;
+      accumulatedLength += rawLength;
 
       return {
         allocation,
