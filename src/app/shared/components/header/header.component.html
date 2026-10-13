@@ -1,39 +1,45 @@
 <header
-  class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 transition-colors"
+  class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 transition-colors w-full"
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-    <div class="flex items-center justify-between gap-4">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5">
+    <div class="flex items-center justify-between gap-2 sm:gap-4">
       <!-- Logo & Brand -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
         <img
           src="favicon.svg"
           alt="DipWise Logo"
-          class="w-10 h-10 rounded-xl shadow-lg shadow-sky-500/20"
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-lg shadow-sky-500/20 shrink-0"
         />
-        <div>
-          <div class="flex items-center gap-2">
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 sm:gap-2">
             <h1
-              class="text-xl font-black tracking-tight bg-gradient-to-r from-sky-600 to-emerald-500 bg-clip-text text-transparent"
+              class="text-lg sm:text-xl font-black tracking-tight bg-gradient-to-r from-sky-600 to-emerald-500 bg-clip-text text-transparent truncate"
             >
               DipWise
             </h1>
+            <!-- Connection status indicator for mobile screens -->
             <span
-              class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 border border-sky-300/40 dark:border-sky-700/50"
+              class="w-2 h-2 rounded-full md:hidden shrink-0"
+              [ngClass]="pwaService.isOnline() ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"
+              [title]="pwaService.isOnline() ? 'Online' : 'Offline'"
+            ></span>
+            <span
+              class="hidden sm:inline-flex text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 border border-sky-300/40 dark:border-sky-700/50 whitespace-nowrap shrink-0"
             >
               DCA Táctico ATH
             </span>
           </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
             Value Averaging & Asignación Óptima por ISIN
           </p>
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Online / Offline indicator -->
+      <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+        <!-- Online / Offline indicator (desktop/tablet) -->
         <div
-          class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+          class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border shrink-0"
           [ngClass]="
             pwaService.isOnline()
               ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'
@@ -51,10 +57,11 @@
         @if (pwaService.canInstall()) {
           <button
             (click)="installPwa()"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-all"
+            class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-all shrink-0"
             title="Instalar en tu dispositivo"
+            aria-label="Instalar App"
           >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -70,11 +77,12 @@
         <button
           (click)="syncQuotes()"
           [disabled]="quoteService.isUpdating()"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
           title="Actualizar cotizaciones del mercado"
+          aria-label="Actualizar Precios"
         >
           <svg
-            class="w-4 h-4 text-sky-600 dark:text-sky-400"
+            class="w-4 h-4 shrink-0 text-sky-600 dark:text-sky-400"
             [ngClass]="{ 'animate-spin': quoteService.isUpdating() }"
             fill="none"
             viewBox="0 0 24 24"
@@ -95,9 +103,11 @@
         <!-- Add Asset Button -->
         <button
           (click)="openAddAsset.emit()"
-          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-colors"
+          class="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-colors shrink-0"
+          title="Añadir Activo"
+          aria-label="Añadir Activo"
         >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -105,16 +115,17 @@
               d="M12 4v16m8-8H4"
             />
           </svg>
-          <span>Añadir Activo</span>
+          <span class="hidden sm:inline">Añadir Activo</span>
         </button>
 
         <!-- Settings Button -->
         <button
           (click)="openSettings.emit()"
-          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+          class="p-1.5 sm:p-2 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-colors shrink-0"
           title="Configuración de Cartera y API"
+          aria-label="Configuración"
         >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -133,13 +144,14 @@
         <!-- Theme Toggle -->
         <button
           (click)="themeService.toggleTheme()"
-          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+          class="p-1.5 sm:p-2 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-colors shrink-0"
           title="Alternar Modo Oscuro/Claro"
+          aria-label="Alternar Modo Oscuro o Claro"
         >
           @if (themeService.isDark()) {
             <!-- Sun Icon -->
             <svg
-              class="w-4 h-4 text-amber-400"
+              class="w-4 h-4 shrink-0 text-amber-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -154,7 +166,7 @@
           } @else {
             <!-- Moon Icon -->
             <svg
-              class="w-4 h-4 text-slate-700"
+              class="w-4 h-4 shrink-0 text-slate-700"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
