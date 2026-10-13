@@ -114,18 +114,18 @@
 
             <!-- Asset Classes Split -->
             <div
-              class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 space-y-3"
+              class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 space-y-3"
             >
               <div
                 class="text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between"
               >
                 <span>Reparto por Clases de Activos</span>
-                <span class="text-sky-600 dark:text-sky-400">Total: 100%</span>
+                <span class="text-sky-600 dark:text-sky-400 font-semibold">Total: 100%</span>
               </div>
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                  <label class="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
                     % Renta Variable (RV)
                   </label>
                   <input
@@ -134,12 +134,12 @@
                     max="100"
                     [(ngModel)]="settings.equityPercentage"
                     (ngModelChange)="onEquityPercentageChange($event)"
-                    class="w-full px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                    class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                  <label class="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
                     % Oro / Activo Refugio
                   </label>
                   <input
@@ -148,7 +148,7 @@
                     max="100"
                     [(ngModel)]="settings.safeHavenPercentage"
                     (ngModelChange)="onSafeHavenPercentageChange($event)"
-                    class="w-full px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                    class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -156,18 +156,18 @@
 
             <!-- Equities Internal Split -->
             <div
-              class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 space-y-3"
+              class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 space-y-3"
             >
               <div
                 class="text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between"
               >
                 <span>Subdivisión de la Renta Variable</span>
-                <span class="text-indigo-600 dark:text-indigo-400">50% Fija + 50% ATH</span>
+                <span class="text-indigo-600 dark:text-indigo-400 font-semibold">50% Fija + 50% ATH</span>
               </div>
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                  <label class="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
                     % Base Fija Estratégica
                   </label>
                   <input
@@ -178,12 +178,12 @@
                     (ngModelChange)="
                       settings.equityDynamicRatio = 100 - settings.equityFixedBaseRatio
                     "
-                    class="w-full px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                    class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                  <label class="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
                     % Bolsa Dinámica Extra (ATH)
                   </label>
                   <input
@@ -194,7 +194,7 @@
                     (ngModelChange)="
                       settings.equityFixedBaseRatio = 100 - settings.equityDynamicRatio
                     "
-                    class="w-full px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                    class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -313,7 +313,7 @@
                   type="text"
                   [(ngModel)]="settings.apiSettings.corsProxyUrl"
                   placeholder="https://api.allorigins.win/raw?url="
-                  class="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                  class="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition-colors"
                 />
                 <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   Permite realizar peticiones directas desde GitHub Pages a Yahoo Finance sin
@@ -334,7 +334,7 @@
                   type="password"
                   [(ngModel)]="settings.apiSettings.apiKey"
                   placeholder="Tu clave privada de la API"
-                  class="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                  class="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition-colors"
                 />
                 <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   Se almacena de forma 100% segura únicamente en tu navegador (localStorage).
@@ -351,7 +351,7 @@
                   type="text"
                   [(ngModel)]="settings.apiSettings.customProxyUrlTemplate"
                   placeholder="https://tu-worker.dev/quote?ticker={ticker}&isin={isin}"
-                  class="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                  class="w-full px-3 py-2 text-xs font-mono rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition-colors"
                 />
                 <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   Usa <code>&#123;ticker&#125;</code> e <code>&#123;isin&#125;</code> como

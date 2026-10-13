@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#0b1326"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+
+    <!-- Radial Glow inside upper-right -->
+    <radialGradient id="radialGlow" cx="68%" cy="32%" r="55%">
+      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.3"/>
+      <stop offset="60%" stop-color="#10b981" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Area Fill Gradient -->
+    <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.32"/>
+      <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.02"/>
+    </linearGradient>
+
+    <!-- Curve Stroke Gradient -->
+    <linearGradient id="lineGrad" x1="16%" y1="65%" x2="76%" y2="22%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="48%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+
+    <!-- Clip Path for Squircle -->
+    <clipPath id="squircleClip">
+      <rect x="16" y="16" width="480" height="480" rx="112" ry="112"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background Squircle with Border -->
+  <g clip-path="url(#squircleClip)">
+    <rect x="16" y="16" width="480" height="480" fill="url(#bgGrad)"/>
+    <circle cx="348" cy="164" r="280" fill="url(#radialGlow)"/>
+
+    <!-- Subtle ATH horizontal dashed line -->
+    <line x1="60" y1="230" x2="452" y2="230" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="4" stroke-dasharray="16 12"/>
+
+    <!-- Tactical DCA Accumulation Pillars -->
+    <rect x="110" y="276" width="26" height="124" rx="10" fill="#0ea5e9" fill-opacity="0.15"/>
+    <rect x="182" y="318" width="26" height="102" rx="10" fill="#0ea5e9" fill-opacity="0.15"/>
+    <rect x="244" y="358" width="26" height="72" rx="10" fill="#0ea5e9" fill-opacity="0.15"/>
+    <rect x="304" y="266" width="26" height="144" rx="10" fill="#0ea5e9" fill-opacity="0.15"/>
+    <rect x="366" y="180" width="26" height="204" rx="10" fill="#0ea5e9" fill-opacity="0.15"/>
+
+    <!-- Gradient Area Under Curve -->
+    <path d="M 82 430 L 82 230 C 154 245, 184 368, 236 368 C 287 368, 328 205, 382 124 L 382 430 Z" fill="url(#areaGrad)"/>
+
+    <!-- Soft Ambient Glow behind Dynamic Curve -->
+    <path d="M 82 230 C 154 245, 184 368, 236 368 C 287 368, 328 205, 382 124" fill="none" stroke="#06b6d4" stroke-opacity="0.25" stroke-width="42" stroke-linecap="round"/>
+
+    <!-- Main Dynamic Trajectory Curve -->
+    <path d="M 82 230 C 154 245, 184 368, 236 368 C 287 368, 328 205, 380 128" fill="none" stroke="url(#lineGrad)" stroke-width="22" stroke-linecap="round"/>
+
+    <!-- Arrowhead at ATH Breakout Peak -->
+    <polygon points="398,96 348,124 366,140 376,166" fill="#34d399"/>
+
+    <!-- ATH Breakout intersection node -->
+    <circle cx="328" cy="230" r="14" fill="#10b981" fill-opacity="0.35"/>
+    <circle cx="328" cy="230" r="7" fill="#6ee7b7"/>
+
+    <!-- Glowing Tactical "Dip" Node (Buy Point) -->
+    <circle cx="236" cy="368" r="42" fill="#06b6d4" fill-opacity="0.22"/>
+    <circle cx="236" cy="368" r="24" fill="#0f172a" stroke="#06b6d4" stroke-width="7"/>
+    <circle cx="236" cy="368" r="10" fill="#38bdf8"/>
+  </g>
+
+  <!-- Border Ring -->
+  <rect x="16" y="16" width="480" height="480" rx="112" ry="112" fill="none" stroke="#38bdf8" stroke-opacity="0.3" stroke-width="9"/>
+</svg>
